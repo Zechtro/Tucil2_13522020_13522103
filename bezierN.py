@@ -9,7 +9,6 @@ def BezierN(points, iterasi, iterasiMax):
         return []
     else:
         q = points
-        print(q)
         left = [q[0]]
         right = [q[-1]]
         while len(q) > 1:
@@ -17,7 +16,7 @@ def BezierN(points, iterasi, iterasiMax):
             q = [getMidPoint(temp[i], temp[i+1]) for i in range(len(temp)-1)]
             left.append(q[0])
             right.append(q[-1])
-            print(q)
+        right.reverse()
         if iterasi == 0:
             iterasi += 1
             return [points[0]] + BezierN(left, iterasi, iterasiMax) + [left[-1]] + BezierN(right, iterasi, iterasiMax) + [points[-1]]
