@@ -24,4 +24,18 @@ def BezierN(points, iterasi, iterasiMax):
             iterasi += 1
             return BezierN(left, iterasi, iterasiMax) + [left[-1]] + BezierN(right, iterasi, iterasiMax)
 
-print(BezierN([(0,0), (0.5, 0.5), (1,1), (1.5 , 0.5), (2,0)], 0, 3))
+def bruteForceN(points, iterasi):
+    n = pow(2, iterasi)
+    delta = 1 / n
+    t = 0
+    b = []
+    for i in range(n):
+        p = [(pow(1-t, 3)*points[0][i] + 3*pow(1-t, 2)*t*points[1][i] + 3 * (1-t) * pow(t, 2) * points[2][i] + pow(t, 3) * points[3][i]) for i in range(2)]
+        b.append((p[0], p[1]))
+        t += delta
+    p = [points[3][i] for i in range(2)]
+    b.append((p[0], p[1]))
+    return b
+
+print(BezierN([(0,0), (0.5, 0.5), (1,1), (1.5 , 0.5)], 0, 3))
+print(bruteForceN([(0,0), (0.5, 0.5), (1,1), (1.5 , 0.5)], 3))
