@@ -1,39 +1,3 @@
-import flet as ft
-import flet.canvas as cv
-import math
-
-def main(page: ft.Page):
-    page.title = "Bézier Curve"
-    app_h = 800
-    app_w = 1500
-    page.window_height = app_h
-    page.window_width = app_w
-    page.window_resizable = False
-    
-    # Colors
-    
-    
-    # Fonts
-    page.fonts = {
-        "Railinc" : "/fonts/Raillinc.otf",
-        "Curves" : "/fonts/Square_Curves.ttf",
-    }
-    
-    
-    
-    
-    
-    page.update()
-
-ft.app(target=main)
-
-# Initiate Variable
-canvas_path = []
-p_kontrol_antara = []
-p_awal = []
-p_akhir = []
-
-
 # Impementation
 def makeListEmpty(List):
     List.clear()
@@ -49,6 +13,7 @@ def BezierKuadratik(p0, p1, p2, iterate, iterateMax):
     q1 = getMidPoint(p1, p2)
     r0 = getMidPoint(q0,q1)
     if iterate == 0:
+        iterate += 1
         return [p0] + BezierKuadratik(p0, q0, r0, iterate, iterateMax) + [r0] + BezierKuadratik(r0, q1, p2, iterate, iterateMax) + [p2]
     elif iterate < iterateMax:
         iterate += 1
@@ -58,5 +23,3 @@ def BezierKuadratik(p0, p1, p2, iterate, iterateMax):
     
 print(BezierKuadratik((0,0),(1,1),(2,0),0,1))
 print(BezierKuadratik((0,0),(1,1),(2,0),0,2))
-        
-    
