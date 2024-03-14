@@ -18,7 +18,7 @@ def main(page: ft.Page):
     }
     
     # Initiate Variable
-    num_of_iteration = 0
+    num_of_iteration = [0]
     
     range_y = 0
     max_y = 0
@@ -34,7 +34,7 @@ def main(page: ft.Page):
     result_path = []
     
     coordinate_points = []
-    points = []
+    initial_points = []
 
     # Impementation
     def makeListEmpty(List):
@@ -95,7 +95,14 @@ def main(page: ft.Page):
     def button1Clicked(e):
         makeListEmpty(canvas_path)
         makeListEmpty(result_path)
-        print(BezierKuadratik((0,0),(500,500),(1000,0),0,1))
+        x0 = coordinate_points[0][0]
+        y0 = coordinate_points[0][1]
+        x1 = coordinate_points[1][0]
+        y1 = coordinate_points[1][1]
+        x2 = coordinate_points[2][0]
+        y2 = coordinate_points[2][1]
+        print(BezierKuadratik((x0,y0),(x1,y1),(x2,y2),0,num_of_iteration[0]))
+        # print(BezierKuadratik((0,720),(360,0),(720,720),0,num_of_iteration[0]))
     
     button1 = ft.ElevatedButton(
         text="1",
@@ -125,7 +132,7 @@ def main(page: ft.Page):
     )
     
     def inputChanged(e):
-        makeListEmpty(points)
+        makeListEmpty(initial_points)
         makeListEmpty(coordinate_points)
         range_y = 0
         max_y = 0
@@ -135,9 +142,9 @@ def main(page: ft.Page):
         min_x = 0
         coordinate_multiplier = 1
         isValid = True
-        points = e.control.value.split("_")
-        for i in range(len(points)):
-            point = point.split(",")
+        points_temp = e.control.value.split("_")
+        for i in range(len(points_temp)):
+            point = points_temp[i].split(",")
             if(len(point) == 2):
                 try:
                     x = int(point[0])
@@ -162,34 +169,37 @@ def main(page: ft.Page):
                         elif(x < min_x):
                             min_x = x
                     e.control.error_text = ""
-                    points.append((x,y))
+                    initial_points.append((x,y))
             else:
                 e.control.error_text = "Invalid format"
                 isValid = False
                 break
         
         if isValid:
+            print("HUWAHUWA", initial_points,max_x,min_x,max_y,min_y)
             range_y = max_y-min_y
             range_x = max_x-min_x
-            if(range_y > range_x):
-                coordinate_multiplier = float((app_h*0.9)/range_y)
-                for point in points:
-                    y_coor = (app_h*0.9) - (point[1]-min_y)
-                    x_coor = point[0] + (float(((app_w*0.9)-range_x)/2)-min_x)
-                    coordinate_points.append((x_coor,y_coor))
-            else:
-                coordinate_multiplier = float((app_w*0.9)/range_x)
-                for point in points:
-                    x_coor = (app_w*0.9) - (point[0]-min_x)
-                    y_coor = point[1] + (float(((app_h*0.9)-range_y)/2)-min_y)
-                    coordinate_points.append((x_coor,y_coor))
+            if(range_x > 0 and range_y > 0):
+                if(range_y > range_x):
+                    coordinate_multiplier = float((app_h*0.85)/range_y)
+                    for point in initial_points:
+                        y_coor = (app_h*0.85) - ((point[1]-min_y)*coordinate_multiplier)
+                        x_coor = point[0]*coordinate_multiplier + (float(((app_h*0.85)-(range_x*coordinate_multiplier))/2)-(min_x*coordinate_multiplier))
+                        coordinate_points.append((x_coor,y_coor))
+                else:
+                    coordinate_multiplier = float((app_h*0.85)/range_x)
+                    for point in initial_points:
+                        x_coor = (point[0]-min_x)*coordinate_multiplier
+                        y_coor = (app_h*0.85)-(point[1]*coordinate_multiplier + (float(((app_h*0.85)-(range_y*coordinate_multiplier))/2)-(min_y*coordinate_multiplier)))
+                        coordinate_points.append((x_coor,y_coor))
+                print("COOR",coordinate_points, coordinate_multiplier, app_h*0.85, range_x)
         page.update()
         
     def iterationChanged(e):
         try:
-            num_of_iteration = int(e.control.value)
+            num_of_iteration[0] = int(e.control.value)
         except:
-            num_of_iteration = 0
+            num_of_iteration[0] = 0
             e.control.error_text = "Value must be integer"
         else:
             e.control.error_text = ""
@@ -203,7 +213,7 @@ def main(page: ft.Page):
         content=ft.Column(
             controls=[
                 ft.Row(
-                    alignment="SPACEAROUND",
+                    alignment="center",
                     vertical_alignment="center",
                     controls=[
                         ft.Container(
@@ -212,8 +222,8 @@ def main(page: ft.Page):
                                 alignment="center",
                                 controls=[
                                     ft.Container(
-                                        height=app_h*0.9,
-                                        width=app_h*0.9,
+                                        height=app_h*0.85,
+                                        width=app_h*0.85,
                                         alignment=ft.alignment.center,
                                         # bgcolor="#000000",
                                         content=ft.Column(
@@ -249,8 +259,8 @@ def main(page: ft.Page):
                             )
                         ),
                         ft.Container(
-                            height=app_h*0.845,
-                            width=app_h*0.85,
+                            height=app_h*0.8545,
+                            width=app_h*0.855,
                             # bgcolor="#000000",
                             content=ft.Column(
                                 horizontal_alignment="center",
@@ -289,7 +299,7 @@ def main(page: ft.Page):
                                             ],
                                         )
                                     ),
-                                    button2,
+                                    button1,
                                     
                                 ]
                             )
