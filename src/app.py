@@ -46,7 +46,7 @@ def main(page: ft.Page):
         else:
             canvas_path.append(cv.Path.LineTo(ps1[0][0],ps1[0][1]))
         page.update()
-        time.sleep(0.2)
+        # time.sleep(0.001)
         # print("YAHAHAH",canvas_path)
     
     def insertToPathResult(ps1):
@@ -55,7 +55,7 @@ def main(page: ft.Page):
         else:
             result_path.append(cv.Path.LineTo(ps1[0][0],ps1[0][1]))
         page.update()
-        time.sleep(0.2)
+        # time.sleep(0.001)
         
     def getMidPoint(p1,p2):
         x = float((p1[0]+p2[0])/2 )
@@ -109,10 +109,44 @@ def main(page: ft.Page):
         on_click=button1Clicked,
     )
     
+    def BezierN(points, iterasi, iterasiMax):
+        if (iterasi >= iterasiMax):
+            return []
+        else:
+            q = points
+            left = [q[0]]
+            right = [q[-1]]
+            while len(q) > 1:
+                temp = q
+                for i in range(len(temp)):
+                    if(i == 0):
+                        insertToPath((points[0],"m"))
+                    else:
+                        insertToPath((points[i],"l"))
+                q = [getMidPoint(temp[i], temp[i+1]) for i in range(len(temp)-1)]
+                
+                left.append(q[0])
+                right.append(q[-1])
+            right.reverse()
+            if(iterasi == iterasiMax-1):
+                insertToPathResult((points[0],"m"))
+                insertToPathResult((q[0],"l"))
+                insertToPathResult((points[-1],"l"))
+            elif(iterasi < iterasiMax-1):
+                insertToPath((points[0],"m"))
+                insertToPath((q[0],"l"))
+                insertToPath((points[-1],"l"))
+            if iterasi == 0:
+                iterasi += 1
+                return [points[0]] + BezierN(left, iterasi, iterasiMax) + [left[-1]] + BezierN(right, iterasi, iterasiMax) + [points[-1]]
+            else:
+                iterasi += 1
+                return BezierN(left, iterasi, iterasiMax) + [left[-1]] + BezierN(right, iterasi, iterasiMax)
+    
     def button2Clicked(e):
         makeListEmpty(canvas_path)
         makeListEmpty(result_path)
-        print(BezierKuadratik((0,0),(500,500),(1000,0),0,3))
+        print(BezierN(coordinate_points,0,num_of_iteration[0]))
     
     button2 = ft.ElevatedButton(
         text="2",
@@ -127,7 +161,7 @@ def main(page: ft.Page):
     
     paint_result_canvas = ft.Paint(
         style=ft.PaintingStyle.STROKE,
-        stroke_width=2,
+        stroke_width=4,
         color="#000000"
     )
     
@@ -300,6 +334,7 @@ def main(page: ft.Page):
                                         )
                                     ),
                                     button1,
+                                    button2,
                                     
                                 ]
                             )
