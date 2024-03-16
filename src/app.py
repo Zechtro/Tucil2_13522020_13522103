@@ -20,25 +20,60 @@ def main(page: ft.Page):
     # Initiate Variable
     num_of_iteration = [0]
     
-    range_y = 0
-    max_y = 0
-    min_y = 0
-    
-    range_x = 0
-    max_x = 0
-    min_x = 0
-    
-    coordinate_multiplier = 1
+    range_x = [0]
+    range_y = [0]
     
     canvas_path = []
+    paint_canvas = ft.Paint(
+        style=ft.PaintingStyle.STROKE,
+        stroke_width=0.5/(num_of_iteration[0]+1),
+        color="#6B728E"
+    )
+    
     result_path = []
+    paint_result_canvas = ft.Paint(
+        style=ft.PaintingStyle.STROKE,
+        stroke_width=1/(num_of_iteration[0]+1),
+        color="#000000"
+    )
+    
+    initial_circle = []
+    paint_initial_circle = ft.Paint(
+        style=ft.PaintingStyle.FILL,
+        stroke_width=1,
+        color="#000000"
+    )
+    
+    result_circle = []
+    paint_result_circle = ft.Paint(
+        style=ft.PaintingStyle.FILL,
+        stroke_width=1,
+        color="#000000"
+    )
+    
+    cartesian_canvas = []
+    paint_cartesian_canvas = ft.Paint(
+        style=ft.PaintingStyle.STROKE,
+        stroke_width=1,
+        color="#000000"
+    )
     
     coordinate_points = []
     initial_points = []
     
     visualization_speed = [0]
-
+        
     # Implementation
+    def resetPath():
+        makeListEmpty(canvas_path)
+        makeListEmpty(result_path)
+        makeListEmpty(result_circle)
+        
+    def resetInitial():
+        makeListEmpty(initial_points)
+        makeListEmpty(coordinate_points)
+        makeListEmpty(initial_circle)
+    
     def makeListEmpty(List):
         List.clear()
         
@@ -58,40 +93,52 @@ def main(page: ft.Page):
         page.update()
         time.sleep(1-visualization_speed[0])
         
+    def insertToPathCircle(p):
+        s = float(50/(max(range_x[0],range_y[0])))
+        s = max(s,5)
+        initial_circle.append(cv.Path.Oval(p[0]-(0.5*s),p[1]-(0.5*s),s,s))
+        page.update()
+        
+    def insertToPathResultCircle(p):
+        s = float(50/(max(range_x[0],range_y[0])))
+        s = max(s,5)
+        result_circle.append(cv.Path.Oval(p[0]-(0.5*s),p[1]-(0.5*s),s,s))
+        page.update()
+        
     def getMidPoint(p1,p2):
         x = float((p1[0]+p2[0])/2 )
         y = float((p1[1]+p2[1])/2)
         pout = (x,y)
         return pout
 
-    def BezierKuadratik(p0, p1, p2, iterate, iterateMax):
-        if(iterate == 0):
-            insertToPath((p0,"m"))
-            insertToPath((p1,"l"))
-            insertToPath((p2,"l"))
-        q0 = getMidPoint(p0,p1)
-        q1 = getMidPoint(p1, p2)
-        r0 = getMidPoint(q0,q1)
-        if(iterate <= iterateMax-1):
-            insertToPath((q0,"m"))
-            insertToPath((q1,"l"))
-        if(iterate == iterateMax-1):
-            insertToPathResult((p0,"m"))
-            insertToPathResult((r0,"l"))
-            insertToPathResult((p2,"l"))
-        elif(iterate < iterateMax-1):
-            insertToPath((p0,"m"))
-            insertToPath((r0,"l"))
-            insertToPath((p2,"l"))
+    # def BezierKuadratik(p0, p1, p2, iterate, iterateMax):
+    #     if(iterate == 0):
+    #         insertToPath((p0,"m"))
+    #         insertToPath((p1,"l"))
+    #         insertToPath((p2,"l"))
+    #     q0 = getMidPoint(p0,p1)
+    #     q1 = getMidPoint(p1, p2)
+    #     r0 = getMidPoint(q0,q1)
+    #     if(iterate <= iterateMax-1):
+    #         insertToPath((q0,"m"))
+    #         insertToPath((q1,"l"))
+    #     if(iterate == iterateMax-1):
+    #         insertToPathResult((p0,"m"))
+    #         insertToPathResult((r0,"l"))
+    #         insertToPathResult((p2,"l"))
+    #     elif(iterate < iterateMax-1):
+    #         insertToPath((p0,"m"))
+    #         insertToPath((r0,"l"))
+    #         insertToPath((p2,"l"))
         
-        if iterate == 0:
-            iterate += 1
-            return [p0] + BezierKuadratik(p0, q0, r0, iterate, iterateMax) + [r0] + BezierKuadratik(r0, q1, p2, iterate, iterateMax) + [p2]
-        elif iterate < iterateMax:
-            iterate += 1
-            return BezierKuadratik(p0, q0, r0, iterate, iterateMax) + [r0] + BezierKuadratik(r0, q1, p2, iterate, iterateMax)
-        else:
-            return []
+    #     if iterate == 0:
+    #         iterate += 1
+    #         return [p0] + BezierKuadratik(p0, q0, r0, iterate, iterateMax) + [r0] + BezierKuadratik(r0, q1, p2, iterate, iterateMax) + [p2]
+    #     elif iterate < iterateMax:
+    #         iterate += 1
+    #         return BezierKuadratik(p0, q0, r0, iterate, iterateMax) + [r0] + BezierKuadratik(r0, q1, p2, iterate, iterateMax)
+    #     else:
+    #         return []
     
     # def button1Clicked(e):
     #     x0 = coordinate_points[0][0]
@@ -130,6 +177,7 @@ def main(page: ft.Page):
                 right.append(q[-1])
             right.reverse()
             if(iterasi == iterasiMax-1):
+                insertToPathResultCircle(q[0])
                 insertToPathResult((points[0],"m"))
                 insertToPathResult((q[0],"l"))
                 insertToPathResult((points[-1],"l"))
@@ -139,14 +187,17 @@ def main(page: ft.Page):
                 insertToPath((points[-1],"l"))
             if iterasi == 0:
                 iterasi += 1
-                return [points[0]] + BezierN(left, iterasi, iterasiMax) + [left[-1]] + BezierN(right, iterasi, iterasiMax) + [points[-1]]
+                output = [points[0]] + BezierN(left, iterasi, iterasiMax)
+                insertToPathResultCircle(left[-1])
+                return  output + [left[-1]] + BezierN(right, iterasi, iterasiMax) + [points[-1]]
             else:
                 iterasi += 1
-                return BezierN(left, iterasi, iterasiMax) + [left[-1]] + BezierN(right, iterasi, iterasiMax)
+                output = BezierN(left, iterasi, iterasiMax)
+                insertToPathResultCircle(left[-1])
+                return output + [left[-1]] + BezierN(right, iterasi, iterasiMax)
     
     def buttonVisualizeClicked(e):
-        makeListEmpty(canvas_path)
-        makeListEmpty(result_path)
+        resetPath()
         e.control.visible = False
         e.control.disabled = True
         print(BezierN(coordinate_points,0,num_of_iteration[0]))
@@ -177,25 +228,12 @@ def main(page: ft.Page):
         content=ft.Text("Visualize!",size=17,font_family="Railinc")
     )
     
-    paint_canvas = ft.Paint(
-        style=ft.PaintingStyle.STROKE,
-        stroke_width=0.5/(num_of_iteration[0]+1),
-        color="#6B728E"
-    )
-    
-    paint_result_canvas = ft.Paint(
-        style=ft.PaintingStyle.STROKE,
-        stroke_width=1/(num_of_iteration[0]+1),
-        color="#000000"
-    )
-    
     def inputChanged(e):
-        makeListEmpty(initial_points)
-        makeListEmpty(coordinate_points)
-        range_y = 0
+        resetInitial()
+        temp_range_y = 0
         max_y = 0
         min_y = 0
-        range_x = 0
+        temp_range_x = 0
         max_x = 0
         min_x = 0
         coordinate_multiplier = 1
@@ -213,6 +251,7 @@ def main(page: ft.Page):
                         y = int(point[1])
                     except:
                         e.control.error_text = "x and y must be integer"
+                        resetInitial()
                         isValid = False
                         break
                     else:
@@ -234,27 +273,31 @@ def main(page: ft.Page):
                         initial_points.append((x,y))
                 else:
                     e.control.error_text = "Invalid format"
+                    resetInitial()
                     isValid = False
                     break
             
             if isValid:
                 # print("HUWAHUWA", initial_points,max_x,min_x,max_y,min_y)
-                range_y = max_y-min_y
-                range_x = max_x-min_x
-                if(range_x > 0 and range_y > 0):
-                    if(range_y > range_x):
-                        coordinate_multiplier = float((app_h*0.85)/range_y)
-                        for point in initial_points:
-                            y_coor = (app_h*0.85) - ((point[1]-min_y)*coordinate_multiplier)
-                            x_coor = point[0]*coordinate_multiplier + (float(((app_h*0.85)-(range_x*coordinate_multiplier))/2)-(min_x*coordinate_multiplier))
-                            coordinate_points.append((x_coor,y_coor))
-                    else:
-                        coordinate_multiplier = float((app_h*0.85)/range_x)
-                        for point in initial_points:
-                            x_coor = (point[0]-min_x)*coordinate_multiplier
-                            y_coor = (app_h*0.85)-(point[1]*coordinate_multiplier + (float(((app_h*0.85)-(range_y*coordinate_multiplier))/2)-(min_y*coordinate_multiplier)))
-                            coordinate_points.append((x_coor,y_coor))
-                    print("COOR",coordinate_points, coordinate_multiplier, app_h*0.85, range_x)
+                temp_range_y = max_y-min_y
+                temp_range_x = max_x-min_x
+                if(temp_range_y > temp_range_x):
+                    coordinate_multiplier = float((app_h*0.85)/temp_range_y)
+                    for point in initial_points:
+                        y_coor = (app_h*0.85) - ((point[1]-min_y)*coordinate_multiplier)
+                        x_coor = point[0]*coordinate_multiplier + (float(((app_h*0.85)-(temp_range_x*coordinate_multiplier))/2)-(min_x*coordinate_multiplier))
+                        coordinate_points.append((x_coor,y_coor))
+                else:
+                    coordinate_multiplier = float((app_h*0.85)/temp_range_x)
+                    for point in initial_points:
+                        x_coor = (point[0]-min_x)*coordinate_multiplier
+                        y_coor = (app_h*0.85)-(point[1]*coordinate_multiplier + (float(((app_h*0.85)-(temp_range_y*coordinate_multiplier))/2)-(min_y*coordinate_multiplier)))
+                        coordinate_points.append((x_coor,y_coor))
+                range_y[0] = temp_range_y
+                range_x[0] = temp_range_x
+                for point in coordinate_points:
+                    insertToPathCircle(point)
+                print("COOR",coordinate_points, coordinate_multiplier, app_h*0.85, temp_range_x)
                     
         page.update()
         
@@ -299,7 +342,14 @@ def main(page: ft.Page):
                                                 ft.Stack(
                                                     controls=[
                                                         cv.Canvas(
-                                                            
+                                                            [
+                                                                cv.Path(
+                                                                    cartesian_canvas,
+                                                                    paint=paint_cartesian_canvas
+                                                                )
+                                                            ],
+                                                            width=float("inf"),
+                                                            expand=True,
                                                         ),
                                                         cv.Canvas(
                                                             [
@@ -321,16 +371,26 @@ def main(page: ft.Page):
                                                             width=float("inf"),
                                                             expand=True,
                                                         ),
-                                                        # cv.Canvas(
-                                                        #     [
-                                                        #         cv.Path(
-                                                        #             initial_circle,
-                                                        #             paint=paint_initial_circle,
-                                                        #         )
-                                                        #     ],
-                                                        #     width=float("inf"),
-                                                        #     expand=True,
-                                                        # ),
+                                                        cv.Canvas(
+                                                            [
+                                                                cv.Path(
+                                                                    initial_circle,
+                                                                    paint=paint_initial_circle,
+                                                                )
+                                                            ],
+                                                            width=float("inf"),
+                                                            expand=True,
+                                                        ),
+                                                        cv.Canvas(
+                                                            [
+                                                                cv.Path(
+                                                                    result_circle,
+                                                                    paint=paint_result_circle,
+                                                                )
+                                                            ],
+                                                            width=float("inf"),
+                                                            expand=True,
+                                                        ),
                                                     ]
                                                 )
                                             ]
