@@ -35,8 +35,10 @@ def main(page: ft.Page):
     
     coordinate_points = []
     initial_points = []
+    
+    visualization_speed = [0]
 
-    # Impementation
+    # Implementation
     def makeListEmpty(List):
         List.clear()
         
@@ -46,8 +48,7 @@ def main(page: ft.Page):
         else:
             canvas_path.append(cv.Path.LineTo(ps1[0][0],ps1[0][1]))
         page.update()
-        # time.sleep(0.001)
-        # print("YAHAHAH",canvas_path)
+        time.sleep(1-visualization_speed[0])
     
     def insertToPathResult(ps1):
         if(ps1[1] == "m"):
@@ -55,7 +56,7 @@ def main(page: ft.Page):
         else:
             result_path.append(cv.Path.LineTo(ps1[0][0],ps1[0][1]))
         page.update()
-        # time.sleep(0.001)
+        time.sleep(1-visualization_speed[0])
         
     def getMidPoint(p1,p2):
         x = float((p1[0]+p2[0])/2 )
@@ -92,22 +93,22 @@ def main(page: ft.Page):
         else:
             return []
     
-    def button1Clicked(e):
-        makeListEmpty(canvas_path)
-        makeListEmpty(result_path)
-        x0 = coordinate_points[0][0]
-        y0 = coordinate_points[0][1]
-        x1 = coordinate_points[1][0]
-        y1 = coordinate_points[1][1]
-        x2 = coordinate_points[2][0]
-        y2 = coordinate_points[2][1]
-        print(BezierKuadratik((x0,y0),(x1,y1),(x2,y2),0,num_of_iteration[0]))
-        # print(BezierKuadratik((0,720),(360,0),(720,720),0,num_of_iteration[0]))
+    # def button1Clicked(e):
+    #     x0 = coordinate_points[0][0]
+    #     y0 = coordinate_points[0][1]
+    #     x1 = coordinate_points[1][0]
+    #     y1 = coordinate_points[1][1]
+    #     x2 = coordinate_points[2][0]
+    #     y2 = coordinate_points[2][1]
+    #     makeListEmpty(canvas_path)
+    #     makeListEmpty(result_path)
+    #     print(BezierKuadratik((x0,y0),(x1,y1),(x2,y2),0,num_of_iteration[0]))
+    #     # print(BezierKuadratik((0,720),(360,0),(720,720),0,num_of_iteration[0]))
     
-    button1 = ft.ElevatedButton(
-        text="1",
-        on_click=button1Clicked,
-    )
+    # button1 = ft.ElevatedButton(
+    #     text="1",
+    #     on_click=button1Clicked,
+    # )
     
     def BezierN(points, iterasi, iterasiMax):
         if (iterasi >= iterasiMax):
@@ -120,9 +121,9 @@ def main(page: ft.Page):
                 temp = q
                 for i in range(len(temp)):
                     if(i == 0):
-                        insertToPath((points[0],"m"))
+                        insertToPath((temp[0],"m"))
                     else:
-                        insertToPath((points[i],"l"))
+                        insertToPath((temp[i],"l"))
                 q = [getMidPoint(temp[i], temp[i+1]) for i in range(len(temp)-1)]
                 
                 left.append(q[0])
@@ -143,25 +144,48 @@ def main(page: ft.Page):
                 iterasi += 1
                 return BezierN(left, iterasi, iterasiMax) + [left[-1]] + BezierN(right, iterasi, iterasiMax)
     
-    def button2Clicked(e):
+    def buttonVisualizeClicked(e):
         makeListEmpty(canvas_path)
         makeListEmpty(result_path)
+        e.control.visible = False
+        e.control.disabled = True
         print(BezierN(coordinate_points,0,num_of_iteration[0]))
+        e.control.disabled = False
+        e.control.visible = True
+        page.update()
     
-    button2 = ft.ElevatedButton(
-        text="2",
-        on_click=button2Clicked,
+    buttonVisualize = ft.ElevatedButton(
+        style=ft.ButtonStyle(
+                color={
+                    # ft.MaterialState.HOVERED: ft.colors.WHITE,
+                    # ft.MaterialState.FOCUSED: ft.colors.BLUE,
+                    ft.MaterialState.DEFAULT: "#FFFFFF",
+                    ft.MaterialState.HOVERED: "#000000",
+                },
+                bgcolor={ft.MaterialState.DEFAULT: "#000000",
+                         ft.MaterialState.HOVERED: "#FFFFFF"
+                },
+                padding={ft.MaterialState.DEFAULT: 28},
+                overlay_color=ft.colors.TRANSPARENT,
+                elevation={"pressed": 0, "": 1},
+                side={
+                    ft.MaterialState.DEFAULT: ft.BorderSide(1, "#000000"),
+                },
+            ),
+        width=0.15*app_w,
+        on_click=buttonVisualizeClicked,
+        content=ft.Text("Visualize!",size=17,font_family="Railinc")
     )
     
     paint_canvas = ft.Paint(
         style=ft.PaintingStyle.STROKE,
-        stroke_width=1.3,
-        color="#B4B4B8"
+        stroke_width=0.5/(num_of_iteration[0]+1),
+        color="#6B728E"
     )
     
     paint_result_canvas = ft.Paint(
         style=ft.PaintingStyle.STROKE,
-        stroke_width=4,
+        stroke_width=1/(num_of_iteration[0]+1),
         color="#000000"
     )
     
@@ -177,56 +201,61 @@ def main(page: ft.Page):
         coordinate_multiplier = 1
         isValid = True
         points_temp = e.control.value.split("_")
-        for i in range(len(points_temp)):
-            point = points_temp[i].split(",")
-            if(len(point) == 2):
-                try:
-                    x = int(point[0])
-                    y = int(point[1])
-                except:
-                    e.control.error_text = "x and y must be integer"
+        n_points = len(points_temp)
+        if(n_points < 3):
+            e.control.error_text = "A curve consist of minimum 3 control points"
+        else:
+            for i in range(n_points):
+                point = points_temp[i].split(",")
+                if(len(point) == 2):
+                    try:
+                        x = int(point[0])
+                        y = int(point[1])
+                    except:
+                        e.control.error_text = "x and y must be integer"
+                        isValid = False
+                        break
+                    else:
+                        if(i==0):
+                            max_y = y
+                            min_y = y
+                            max_x = x
+                            min_x = x
+                        else:
+                            if(y > max_y):
+                                max_y = y
+                            elif(y < min_y):
+                                min_y = y
+                            if(x > max_x):
+                                max_x = x
+                            elif(x < min_x):
+                                min_x = x
+                        e.control.error_text = ""
+                        initial_points.append((x,y))
+                else:
+                    e.control.error_text = "Invalid format"
                     isValid = False
                     break
-                else:
-                    if(i==0):
-                        max_y = y
-                        min_y = y
-                        max_x = x
-                        min_x = x
+            
+            if isValid:
+                # print("HUWAHUWA", initial_points,max_x,min_x,max_y,min_y)
+                range_y = max_y-min_y
+                range_x = max_x-min_x
+                if(range_x > 0 and range_y > 0):
+                    if(range_y > range_x):
+                        coordinate_multiplier = float((app_h*0.85)/range_y)
+                        for point in initial_points:
+                            y_coor = (app_h*0.85) - ((point[1]-min_y)*coordinate_multiplier)
+                            x_coor = point[0]*coordinate_multiplier + (float(((app_h*0.85)-(range_x*coordinate_multiplier))/2)-(min_x*coordinate_multiplier))
+                            coordinate_points.append((x_coor,y_coor))
                     else:
-                        if(y > max_y):
-                            max_y = y
-                        elif(y < min_y):
-                            min_y = y
-                        if(x > max_x):
-                            max_x = x
-                        elif(x < min_x):
-                            min_x = x
-                    e.control.error_text = ""
-                    initial_points.append((x,y))
-            else:
-                e.control.error_text = "Invalid format"
-                isValid = False
-                break
-        
-        if isValid:
-            print("HUWAHUWA", initial_points,max_x,min_x,max_y,min_y)
-            range_y = max_y-min_y
-            range_x = max_x-min_x
-            if(range_x > 0 and range_y > 0):
-                if(range_y > range_x):
-                    coordinate_multiplier = float((app_h*0.85)/range_y)
-                    for point in initial_points:
-                        y_coor = (app_h*0.85) - ((point[1]-min_y)*coordinate_multiplier)
-                        x_coor = point[0]*coordinate_multiplier + (float(((app_h*0.85)-(range_x*coordinate_multiplier))/2)-(min_x*coordinate_multiplier))
-                        coordinate_points.append((x_coor,y_coor))
-                else:
-                    coordinate_multiplier = float((app_h*0.85)/range_x)
-                    for point in initial_points:
-                        x_coor = (point[0]-min_x)*coordinate_multiplier
-                        y_coor = (app_h*0.85)-(point[1]*coordinate_multiplier + (float(((app_h*0.85)-(range_y*coordinate_multiplier))/2)-(min_y*coordinate_multiplier)))
-                        coordinate_points.append((x_coor,y_coor))
-                print("COOR",coordinate_points, coordinate_multiplier, app_h*0.85, range_x)
+                        coordinate_multiplier = float((app_h*0.85)/range_x)
+                        for point in initial_points:
+                            x_coor = (point[0]-min_x)*coordinate_multiplier
+                            y_coor = (app_h*0.85)-(point[1]*coordinate_multiplier + (float(((app_h*0.85)-(range_y*coordinate_multiplier))/2)-(min_y*coordinate_multiplier)))
+                            coordinate_points.append((x_coor,y_coor))
+                    print("COOR",coordinate_points, coordinate_multiplier, app_h*0.85, range_x)
+                    
         page.update()
         
     def iterationChanged(e):
@@ -237,9 +266,13 @@ def main(page: ft.Page):
             e.control.error_text = "Value must be integer"
         else:
             e.control.error_text = ""
-            
         page.update()
-                    
+        
+        
+    def slider_change(e):
+        visualization_speed[0] = e.control.value
+        page.update()
+                
     container = ft.Container(
         height=app_h,
         width=app_w,
@@ -260,10 +293,14 @@ def main(page: ft.Page):
                                         width=app_h*0.85,
                                         alignment=ft.alignment.center,
                                         # bgcolor="#000000",
+                                        margin=ft.margin.only(left=150),
                                         content=ft.Column(
                                             controls=[
                                                 ft.Stack(
                                                     controls=[
+                                                        cv.Canvas(
+                                                            
+                                                        ),
                                                         cv.Canvas(
                                                             [
                                                                 cv.Path(
@@ -283,7 +320,17 @@ def main(page: ft.Page):
                                                             ],
                                                             width=float("inf"),
                                                             expand=True,
-                                                        )
+                                                        ),
+                                                        # cv.Canvas(
+                                                        #     [
+                                                        #         cv.Path(
+                                                        #             initial_circle,
+                                                        #             paint=paint_initial_circle,
+                                                        #         )
+                                                        #     ],
+                                                        #     width=float("inf"),
+                                                        #     expand=True,
+                                                        # ),
                                                     ]
                                                 )
                                             ]
@@ -300,6 +347,7 @@ def main(page: ft.Page):
                                 horizontal_alignment="center",
                                 alignment="center",
                                 controls=[
+                                    # TITLE
                                     ft.Row(
                                         alignment="center",
                                         controls=[
@@ -333,8 +381,38 @@ def main(page: ft.Page):
                                             ],
                                         )
                                     ),
-                                    button1,
-                                    button2,
+                                    # Button "Visualize!"
+                                    ft.Container(
+                                        margin=ft.margin.only(top=30,bottom=30),
+                                        content=buttonVisualize
+                                    ),
+                                    # SPEED SLIDER
+                                    ft.Container(
+                                        width=0.3 * app_w,
+                                        content=ft.Column(
+                                            controls=[
+                                                ft.Text("Visualization Speed",size=15,font_family="Railinc"),          
+                                                ft.Slider(
+                                                    min=0,
+                                                    max =1,
+                                                    divisions=10000,
+                                                    active_color= "#000000",
+                                                    on_change=slider_change
+                                                ),
+                                                ft.Row(
+                                                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                                    controls=[
+                                                        ft.Container(
+                                                            content=ft.Text("Slow",size=10,font_family="Railinc")
+                                                        ),
+                                                        ft.Container(
+                                                            content=ft.Text("Fast",size=10,font_family="Railinc")
+                                                        )
+                                                    ]
+                                                )
+                                            ]
+                                        )
+                                    )
                                     
                                 ]
                             )
