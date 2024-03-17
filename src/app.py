@@ -20,6 +20,8 @@ def main(page: ft.Page):
     # Initiate Variable
     num_of_iteration = [0]
     
+    process_time = [0]
+    
     range_x = [0]
     range_y = [0]
     
@@ -51,12 +53,31 @@ def main(page: ft.Page):
         color="#000000"
     )
     
-    cartesian_canvas = []
-    paint_cartesian_canvas = ft.Paint(
+    cartesian_line_canvas = []
+    paint_cartesian_line_canvas = ft.Paint(
+        style=ft.PaintingStyle.STROKE,
+        stroke_width=0.3,
+        color="#45474B"
+    )
+    
+    cartesian_text_number_canvas = []
+    paint_cartesian_text_number_canvas = ft.Paint(
         style=ft.PaintingStyle.STROKE,
         stroke_width=1,
-        color="#000000"
+        color="#45474B"
     )
+    
+    grid_canvas_hide = []
+    grid_canvas_show = []
+    grid_canvas = [grid_canvas_hide]
+    paint_grid_canvas = ft.Paint(
+        style=ft.PaintingStyle.STROKE,
+        stroke_width=0.3,
+        color="#45474B"
+    )
+    
+    initial_canvas_axis = []
+    initial_canvas_ordinat = []
     
     coordinate_points = []
     initial_points = []
@@ -68,11 +89,19 @@ def main(page: ft.Page):
         makeListEmpty(canvas_path)
         makeListEmpty(result_path)
         makeListEmpty(result_circle)
+        process_time[0] = 0
         
     def resetInitial():
         makeListEmpty(initial_points)
         makeListEmpty(coordinate_points)
         makeListEmpty(initial_circle)
+        makeListEmpty(cartesian_line_canvas)
+        makeListEmpty(cartesian_text_number_canvas)
+        makeListEmpty(grid_canvas_show)
+        makeListEmpty(initial_canvas_axis)
+        makeListEmpty(initial_canvas_ordinat)
+        range_x[0] = 0
+        range_y[0] = 0
     
     def makeListEmpty(List):
         List.clear()
@@ -105,6 +134,49 @@ def main(page: ft.Page):
         result_circle.append(cv.Path.Oval(p[0]-(0.5*s),p[1]-(0.5*s),s,s))
         page.update()
         
+    def insertToPathCartesianLineCanvas(ps):
+        if(ps[1] == "m"):
+            cartesian_line_canvas.append(cv.Path.MoveTo(ps[0][0],ps[0][1]))
+        else:
+            cartesian_line_canvas.append(cv.Path.LineTo(ps[0][0],ps[0][1]))
+        page.update()
+        
+    def insertToPathCartesianTextNumberCanvas(ps):
+        cartesian_text_number_canvas.append(
+            cv.Text(
+                ps[0][0]-5,
+                ps[0][1]-5,
+                ps[1],
+                ft.TextStyle(size=ps[2]),
+            )
+        )
+        page.update()
+        
+    # def insertToPathGridCanvas(ps):
+    #     if(ps[1] == "m"):
+    #         grid_canvas_show.append(cv.Path.MoveTo(ps[0][0],ps[0][1]))
+    #     else:
+    #         grid_canvas_show.append(cv.Path.LineTo(ps[0][0],ps[0][1]))
+    #     page.update()
+    
+    def canvasCoordinate_to_initCoordinate(p):
+        min_y = min([point[1] for point in initial_points])
+        min_x = min([point[0] for point in initial_points])
+        if(range_y[0] > range_x[0]):
+            coordinate_multiplier = float((app_h*0.85)/range_y[0])
+            # y_coor = (app_h*0.85) - ((point[1]-min_y)*coordinate_multiplier)
+            y = float((app_h*0.85-p[1])/coordinate_multiplier)+min_y
+            # x_coor = point[0]*coordinate_multiplier + (float(((app_h*0.85)-(temp_range_x*coordinate_multiplier))/2)-(min_x*coordinate_multiplier))
+            x = float((p[0]-(float(((app_h*0.85)-(range_x[0]*coordinate_multiplier))/2)+(min_x*coordinate_multiplier)))/coordinate_multiplier)
+        else:
+            coordinate_multiplier = float((app_h*0.85)/range_x[0])
+            # x_coor = (point[0]-min_x)*coordinate_multiplier
+            x = float(p[0]/coordinate_multiplier)+min_x
+            # y_coor = (app_h*0.85)-(point[1]*coordinate_multiplier + (float(((app_h*0.85)-(temp_range_y*coordinate_multiplier))/2)-(min_y*coordinate_multiplier)))
+            y = ((app_h * 0.85) - p[1] - float(((app_h * 0.85) - (range_y[0] * coordinate_multiplier)) / 2) + (min_y * coordinate_multiplier)) / coordinate_multiplier
+        # print("MIN Y", min_y, "(",x,",",y,")")
+        return (x,y)
+    
     def getMidPoint(p1,p2):
         x = float((p1[0]+p2[0])/2 )
         y = float((p1[1]+p2[1])/2)
@@ -178,6 +250,17 @@ def main(page: ft.Page):
             right.reverse()
             if(iterasi == iterasiMax-1):
                 insertToPathResultCircle(q[0])
+                offset = 5
+                real_point = canvasCoordinate_to_initCoordinate(q[0])
+                
+                insertToPathCartesianLineCanvas(((q[0][0],0+app_h*0.85-offset),"m"))
+                insertToPathCartesianLineCanvas(((q[0][0],0+app_h*0.85+offset),"l"))
+                insertToPathCartesianTextNumberCanvas(((q[0][0],0+app_h*0.85+offset+15),str(round(real_point[0],2)),8))
+                
+                insertToPathCartesianLineCanvas(((0-offset,q[0][1]),"m"))
+                insertToPathCartesianLineCanvas(((0+offset,q[0][1]),"l"))
+                insertToPathCartesianTextNumberCanvas(((0-offset-15,q[0][1]),str(round(real_point[1],2)),8))
+                
                 insertToPathResult((points[0],"m"))
                 insertToPathResult((q[0],"l"))
                 insertToPathResult((points[-1],"l"))
@@ -230,6 +313,7 @@ def main(page: ft.Page):
     
     def inputChanged(e):
         resetInitial()
+        resetPath()
         temp_range_y = 0
         max_y = 0
         min_y = 0
@@ -295,8 +379,27 @@ def main(page: ft.Page):
                         coordinate_points.append((x_coor,y_coor))
                 range_y[0] = temp_range_y
                 range_x[0] = temp_range_x
-                for point in coordinate_points:
+                # Draw Axis and Ordinat line
+                insertToPathCartesianLineCanvas(((0,0),"m"))
+                insertToPathCartesianLineCanvas(((0,0+app_h*0.85),"l"))
+                insertToPathCartesianLineCanvas(((0+app_h*0.85,0+app_h*0.85),"l"))
+                # Draw Circle (Dot)
+                for i in range(len(coordinate_points)):
+                    point = coordinate_points[i]
                     insertToPathCircle(point)
+                    offset = 5
+                    if(point[0] not in initial_canvas_axis):
+                        insertToPathCartesianLineCanvas(((point[0],0+app_h*0.85-offset),"m"))
+                        insertToPathCartesianLineCanvas(((point[0],0+app_h*0.85+offset),"l"))
+                        insertToPathCartesianTextNumberCanvas(((point[0],0+app_h*0.85+offset+15),str(round(initial_points[i][0],2)),10))
+                        initial_canvas_axis.append(point[0])
+                    if(point[1] not in initial_canvas_ordinat):
+                        insertToPathCartesianLineCanvas(((0-offset,point[1]),"m"))
+                        insertToPathCartesianLineCanvas(((0+offset,point[1]),"l"))
+                        insertToPathCartesianTextNumberCanvas(((0-offset-15,point[1]),str(round(initial_points[i][1],2)),10))
+                        initial_canvas_ordinat.append(point[1])
+                        
+                        
                 print("COOR",coordinate_points, coordinate_multiplier, app_h*0.85, temp_range_x)
                     
         page.update()
@@ -344,8 +447,18 @@ def main(page: ft.Page):
                                                         cv.Canvas(
                                                             [
                                                                 cv.Path(
-                                                                    cartesian_canvas,
-                                                                    paint=paint_cartesian_canvas
+                                                                    grid_canvas[0],
+                                                                    paint=paint_grid_canvas
+                                                                )
+                                                            ],
+                                                            width=float("inf"),
+                                                            expand=True,
+                                                        ),
+                                                        cv.Canvas(
+                                                            [
+                                                                cv.Path(
+                                                                    cartesian_line_canvas,
+                                                                    paint=paint_cartesian_line_canvas
                                                                 )
                                                             ],
                                                             width=float("inf"),
@@ -390,6 +503,9 @@ def main(page: ft.Page):
                                                             ],
                                                             width=float("inf"),
                                                             expand=True,
+                                                        ),
+                                                        cv.Canvas(
+                                                            cartesian_text_number_canvas
                                                         ),
                                                     ]
                                                 )
