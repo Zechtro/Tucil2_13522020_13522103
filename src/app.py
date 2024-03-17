@@ -54,6 +54,7 @@ def main(page: ft.Page):
     )
     
     cartesian_line_canvas = []
+    cartesian_line_result_canvas = []
     paint_cartesian_line_canvas = ft.Paint(
         style=ft.PaintingStyle.STROKE,
         stroke_width=0.3,
@@ -61,6 +62,7 @@ def main(page: ft.Page):
     )
     
     cartesian_text_number_canvas = []
+    cartesian_text_number_result_canvas = []
     paint_cartesian_text_number_canvas = ft.Paint(
         style=ft.PaintingStyle.STROKE,
         stroke_width=1,
@@ -81,8 +83,17 @@ def main(page: ft.Page):
     
     coordinate_points = []
     initial_points = []
+    original_result_points = []
     
     visualization_speed = [0]
+    
+    listview_controls = [
+        ft.Container(
+            margin=ft.margin.only(top=10),
+            content=ft.Text("Result Point",text_align="CENTER",size=15, font_family="Railinc")
+        ),
+        ft.Divider(color="#000000")
+    ]
         
     # Implementation
     def resetPath():
@@ -90,6 +101,18 @@ def main(page: ft.Page):
         makeListEmpty(result_path)
         makeListEmpty(result_circle)
         process_time[0] = 0
+        makeListEmpty(cartesian_line_result_canvas)
+        makeListEmpty(cartesian_text_number_result_canvas)
+        makeListEmpty(listview_controls)
+        listview_controls.append(
+            ft.Container(
+                margin=ft.margin.only(top=10),
+                content=ft.Text("Result Point",text_align="CENTER",size=15, font_family="Railinc")
+            )
+        )
+        listview_controls.append(
+            ft.Divider(color="#000000")
+        )
         
     def resetInitial():
         makeListEmpty(initial_points)
@@ -141,6 +164,13 @@ def main(page: ft.Page):
             cartesian_line_canvas.append(cv.Path.LineTo(ps[0][0],ps[0][1]))
         page.update()
         
+    def insertToPathCartesianLineResultCanvas(ps):
+        if(ps[1] == "m"):
+            cartesian_line_result_canvas.append(cv.Path.MoveTo(ps[0][0],ps[0][1]))
+        else:
+            cartesian_line_result_canvas.append(cv.Path.LineTo(ps[0][0],ps[0][1]))
+        page.update()
+        
     def insertToPathCartesianTextNumberCanvas(ps):
         cartesian_text_number_canvas.append(
             cv.Text(
@@ -148,6 +178,31 @@ def main(page: ft.Page):
                 ps[0][1]-5,
                 ps[1],
                 ft.TextStyle(size=ps[2]),
+            )
+        )
+        page.update()
+        
+    def insertToPathCartesianTextNumberResultCanvas(ps):
+        t = cv.Text(
+                ps[0][0]-5,
+                ps[0][1]-5,
+                ps[1],
+                ft.TextStyle(size=ps[2]),
+            )
+        if(t not in cartesian_text_number_result_canvas and t not in cartesian_text_number_canvas):
+            cartesian_text_number_result_canvas.append(t)
+        page.update()
+        
+    def insertToListView(p):
+        listview_controls.append(
+            ft.Container(
+                margin=ft.margin.only(left=15),
+                content=ft.Column(
+                    controls=[
+                        ft.Text(str(len(listview_controls)-1)+ ". " + str(p),size=15,color="#000000"),
+                        ft.Text(" ",size=15,color="#000000"),
+                    ]
+                )
             )
         )
         page.update()
@@ -174,6 +229,24 @@ def main(page: ft.Page):
             x = float(p[0]/coordinate_multiplier)+min_x
             # y_coor = (app_h*0.85)-(point[1]*coordinate_multiplier + (float(((app_h*0.85)-(temp_range_y*coordinate_multiplier))/2)-(min_y*coordinate_multiplier)))
             y = ((app_h * 0.85) - p[1] - float(((app_h * 0.85) - (range_y[0] * coordinate_multiplier)) / 2) + (min_y * coordinate_multiplier)) / coordinate_multiplier
+        # print("MIN Y", min_y, "(",x,",",y,")")
+        return (x,y)
+    
+    def initCoordinate_to_canvasCoordinate(p):
+        min_y = min([point[1] for point in initial_points])
+        min_x = min([point[0] for point in initial_points])
+        if(range_y[0] > range_x[0]):
+            coordinate_multiplier = float((app_h*0.85)/range_y[0])
+            y = (app_h*0.85) - ((p[1]-min_y)*coordinate_multiplier)
+            # y = float((app_h*0.85-p[1])/coordinate_multiplier)+min_y
+            x = p[0]*coordinate_multiplier + (float(((app_h*0.85)-(range[0]*coordinate_multiplier))/2)-(min_x*coordinate_multiplier))
+            # x = float((p[0]-(float(((app_h*0.85)-(range_x[0]*coordinate_multiplier))/2)+(min_x*coordinate_multiplier)))/coordinate_multiplier)
+        else:
+            coordinate_multiplier = float((app_h*0.85)/range_x[0])
+            x = (p[0]-min_x)*coordinate_multiplier
+            # x = float(p[0]/coordinate_multiplier)+min_x
+            y = (app_h*0.85)-(p[1]*coordinate_multiplier + (float(((app_h*0.85)-(range_y[0]*coordinate_multiplier))/2)-(min_y*coordinate_multiplier)))
+            # y = ((app_h * 0.85) - p[1] - float(((app_h * 0.85) - (range_y[0] * coordinate_multiplier)) / 2) + (min_y * coordinate_multiplier)) / coordinate_multiplier
         # print("MIN Y", min_y, "(",x,",",y,")")
         return (x,y)
     
@@ -229,7 +302,73 @@ def main(page: ft.Page):
     #     on_click=button1Clicked,
     # )
     
+    # def BezierN(points, iterasi, iterasiMax):
+    #     offset = 5
+    #     if (iterasi >= iterasiMax):
+    #         return []
+    #     else:
+    #         q = points
+    #         left = [q[0]]
+    #         right = [q[-1]]
+    #         while len(q) > 1:
+    #             temp = q
+    #             for i in range(len(temp)):
+    #                 if(i == 0):
+    #                     insertToPath((temp[0],"m"))
+    #                 else:
+    #                     insertToPath((temp[i],"l"))
+    #             q = [getMidPoint(temp[i], temp[i+1]) for i in range(len(temp)-1)]
+                
+    #             left.append(q[0])
+    #             right.append(q[-1])
+    #         right.reverse()
+    #         if(iterasi == iterasiMax-1):
+    #             insertToPathResultCircle(q[0])
+    #             real_point = canvasCoordinate_to_initCoordinate(q[0])
+                
+    #             insertToPathCartesianLineResultCanvas(((q[0][0],0+app_h*0.85-offset),"m"))
+    #             insertToPathCartesianLineResultCanvas(((q[0][0],0+app_h*0.85+offset),"l"))
+    #             insertToPathCartesianTextNumberResultCanvas(((q[0][0],0+app_h*0.85+offset+15),str(round(real_point[0],2)),8))
+                
+    #             insertToPathCartesianLineResultCanvas(((0-offset,q[0][1]),"m"))
+    #             insertToPathCartesianLineResultCanvas(((0+offset,q[0][1]),"l"))
+    #             insertToPathCartesianTextNumberResultCanvas(((0-offset-15,q[0][1]),str(round(real_point[1],2)),8))
+                
+    #             insertToPathResult((points[0],"m"))
+    #             insertToPathResult((q[0],"l"))
+    #             insertToPathResult((points[-1],"l"))
+    #         elif(iterasi < iterasiMax-1):
+    #             insertToPath((points[0],"m"))
+    #             insertToPath((q[0],"l"))
+    #             insertToPath((points[-1],"l"))
+    #         if iterasi == 0:
+    #             iterasi += 1
+    #             output = [points[0]] + BezierN(left, iterasi, iterasiMax)
+    #             real_point = canvasCoordinate_to_initCoordinate(left[-1])
+    #             insertToPathResultCircle(left[-1])
+    #             insertToPathCartesianLineResultCanvas(((left[-1][0],0+app_h*0.85-offset),"m"))
+    #             insertToPathCartesianLineResultCanvas(((left[-1][0],0+app_h*0.85+offset),"l"))
+    #             insertToPathCartesianTextNumberResultCanvas(((left[-1][0],0+app_h*0.85+offset+15),str(round(real_point[0],2)),8))
+                
+    #             insertToPathCartesianLineResultCanvas(((0-offset,left[-1][1]),"m"))
+    #             insertToPathCartesianLineResultCanvas(((0+offset,left[-1][1]),"l"))
+    #             insertToPathCartesianTextNumberResultCanvas(((0-offset-15,left[-1][1]),str(round(real_point[1],2)),8))
+    #             return  output + [left[-1]] + BezierN(right, iterasi, iterasiMax) + [points[-1]]
+    #         else:
+    #             iterasi += 1
+    #             output = BezierN(left, iterasi, iterasiMax)
+    #             real_point = canvasCoordinate_to_initCoordinate(left[-1])
+    #             insertToPathResultCircle(left[-1])
+    #             insertToPathCartesianLineResultCanvas(((left[-1][0],0+app_h*0.85-offset),"m"))
+    #             insertToPathCartesianLineResultCanvas(((left[-1][0],0+app_h*0.85+offset),"l"))
+    #             insertToPathCartesianTextNumberResultCanvas(((left[-1][0],0+app_h*0.85+offset+15),str(round(real_point[0],2)),8))
+                
+    #             insertToPathCartesianLineResultCanvas(((0-offset,left[-1][1]),"m"))
+    #             insertToPathCartesianLineResultCanvas(((0+offset,left[-1][1]),"l"))
+    #             insertToPathCartesianTextNumberResultCanvas(((0-offset-15,left[-1][1]),str(round(real_point[1],2)),8))
+    #             return output + [left[-1]] + BezierN(right, iterasi, iterasiMax)
     def BezierN(points, iterasi, iterasiMax):
+        offset = 5
         if (iterasi >= iterasiMax):
             return []
         else:
@@ -240,50 +379,80 @@ def main(page: ft.Page):
                 temp = q
                 for i in range(len(temp)):
                     if(i == 0):
-                        insertToPath((temp[0],"m"))
+                        insertToPath((initCoordinate_to_canvasCoordinate(temp[0]),"m"))
                     else:
-                        insertToPath((temp[i],"l"))
+                        insertToPath((initCoordinate_to_canvasCoordinate(temp[i]),"l"))
                 q = [getMidPoint(temp[i], temp[i+1]) for i in range(len(temp)-1)]
                 
                 left.append(q[0])
                 right.append(q[-1])
             right.reverse()
+            canvas_point = initCoordinate_to_canvasCoordinate(q[0])
             if(iterasi == iterasiMax-1):
-                insertToPathResultCircle(q[0])
-                offset = 5
-                real_point = canvasCoordinate_to_initCoordinate(q[0])
+            #     # insertToListView(q[0])
                 
-                insertToPathCartesianLineCanvas(((q[0][0],0+app_h*0.85-offset),"m"))
-                insertToPathCartesianLineCanvas(((q[0][0],0+app_h*0.85+offset),"l"))
-                insertToPathCartesianTextNumberCanvas(((q[0][0],0+app_h*0.85+offset+15),str(round(real_point[0],2)),8))
+                insertToPathResultCircle(canvas_point)
                 
-                insertToPathCartesianLineCanvas(((0-offset,q[0][1]),"m"))
-                insertToPathCartesianLineCanvas(((0+offset,q[0][1]),"l"))
-                insertToPathCartesianTextNumberCanvas(((0-offset-15,q[0][1]),str(round(real_point[1],2)),8))
+                insertToPathCartesianLineResultCanvas(((canvas_point[0],0+app_h*0.85-offset),"m"))
+                insertToPathCartesianLineResultCanvas(((canvas_point[0],0+app_h*0.85+offset),"l"))
+                insertToPathCartesianTextNumberResultCanvas(((canvas_point[0],0+app_h*0.85+offset+15),str(round(q[0][0],2)),8))
                 
-                insertToPathResult((points[0],"m"))
-                insertToPathResult((q[0],"l"))
-                insertToPathResult((points[-1],"l"))
+                insertToPathCartesianLineResultCanvas(((0-offset,canvas_point[1]),"m"))
+                insertToPathCartesianLineResultCanvas(((0+offset,canvas_point[1]),"l"))
+                insertToPathCartesianTextNumberResultCanvas(((0-offset-15,canvas_point[1]),str(round(q[0][1],2)),8))
+                
+                insertToPathResult((initCoordinate_to_canvasCoordinate(points[0]),"m"))
+                insertToPathResult((canvas_point,"l"))
+                insertToPathResult((initCoordinate_to_canvasCoordinate(points[-1]),"l"))
             elif(iterasi < iterasiMax-1):
-                insertToPath((points[0],"m"))
-                insertToPath((q[0],"l"))
-                insertToPath((points[-1],"l"))
+                insertToPath((initCoordinate_to_canvasCoordinate(points[0]),"m"))
+                insertToPath((canvas_point,"l"))
+                insertToPath((initCoordinate_to_canvasCoordinate(points[-1]),"l"))
             if iterasi == 0:
                 iterasi += 1
+                
+                insertToListView(points[0])
+                
                 output = [points[0]] + BezierN(left, iterasi, iterasiMax)
-                insertToPathResultCircle(left[-1])
-                return  output + [left[-1]] + BezierN(right, iterasi, iterasiMax) + [points[-1]]
+                
+                insertToListView(left[-1])
+                
+                canvas_point = initCoordinate_to_canvasCoordinate(left[-1])
+                insertToPathResultCircle(canvas_point)
+                insertToPathCartesianLineResultCanvas(((canvas_point[0],0+app_h*0.85-offset),"m"))
+                insertToPathCartesianLineResultCanvas(((canvas_point[0],0+app_h*0.85+offset),"l"))
+                insertToPathCartesianTextNumberResultCanvas(((canvas_point[0],0+app_h*0.85+offset+15),str(round(left[-1][0],2)),8))
+                
+                insertToPathCartesianLineResultCanvas(((0-offset,canvas_point[1]),"m"))
+                insertToPathCartesianLineResultCanvas(((0+offset,canvas_point[1]),"l"))
+                insertToPathCartesianTextNumberResultCanvas(((0-offset-15,canvas_point[1]),str(round(left[-1][1],2)),8))
+                output += [left[-1]] + BezierN(right, iterasi, iterasiMax) + [points[-1]]
+                
+                insertToListView(points[-1])
+                
+                return output
             else:
                 iterasi += 1
                 output = BezierN(left, iterasi, iterasiMax)
-                insertToPathResultCircle(left[-1])
+                
+                insertToListView(left[-1])
+                
+                canvas_point = initCoordinate_to_canvasCoordinate(left[-1])
+                insertToPathResultCircle(canvas_point)
+                insertToPathCartesianLineResultCanvas(((canvas_point[0],0+app_h*0.85-offset),"m"))
+                insertToPathCartesianLineResultCanvas(((canvas_point[0],0+app_h*0.85+offset),"l"))
+                insertToPathCartesianTextNumberResultCanvas(((canvas_point[0],0+app_h*0.85+offset+15),str(round(left[-1][0],2)),8))
+                
+                insertToPathCartesianLineResultCanvas(((0-offset,canvas_point[1]),"m"))
+                insertToPathCartesianLineResultCanvas(((0+offset,canvas_point[1]),"l"))
+                insertToPathCartesianTextNumberResultCanvas(((0-offset-15,canvas_point[1]),str(round(left[-1][1],2)),8))
                 return output + [left[-1]] + BezierN(right, iterasi, iterasiMax)
     
     def buttonVisualizeClicked(e):
         resetPath()
         e.control.visible = False
         e.control.disabled = True
-        print(BezierN(coordinate_points,0,num_of_iteration[0]))
+        print(BezierN(initial_points,0,num_of_iteration[0]))
         e.control.disabled = False
         e.control.visible = True
         page.update()
@@ -334,10 +503,31 @@ def main(page: ft.Page):
                         x = int(point[0])
                         y = int(point[1])
                     except:
-                        e.control.error_text = "x and y must be integer"
-                        resetInitial()
-                        isValid = False
-                        break
+                        try:
+                            x = float(point[0])
+                            y = float(point[1])
+                        except:
+                            e.control.error_text = "x and y must be integer"
+                            resetInitial()
+                            isValid = False
+                            break
+                        else:
+                            if(i==0):
+                                max_y = y
+                                min_y = y
+                                max_x = x
+                                min_x = x
+                            else:
+                                if(y > max_y):
+                                    max_y = y
+                                elif(y < min_y):
+                                    min_y = y
+                                if(x > max_x):
+                                    max_x = x
+                                elif(x < min_x):
+                                    min_x = x
+                            e.control.error_text = ""
+                            initial_points.append((x,y))
                     else:
                         if(i==0):
                             max_y = y
@@ -391,12 +581,12 @@ def main(page: ft.Page):
                     if(point[0] not in initial_canvas_axis):
                         insertToPathCartesianLineCanvas(((point[0],0+app_h*0.85-offset),"m"))
                         insertToPathCartesianLineCanvas(((point[0],0+app_h*0.85+offset),"l"))
-                        insertToPathCartesianTextNumberCanvas(((point[0],0+app_h*0.85+offset+15),str(round(initial_points[i][0],2)),10))
+                        insertToPathCartesianTextNumberCanvas(((point[0],0+app_h*0.85+offset+15),str(round(initial_points[i][0],2)),8))
                         initial_canvas_axis.append(point[0])
                     if(point[1] not in initial_canvas_ordinat):
                         insertToPathCartesianLineCanvas(((0-offset,point[1]),"m"))
                         insertToPathCartesianLineCanvas(((0+offset,point[1]),"l"))
-                        insertToPathCartesianTextNumberCanvas(((0-offset-15,point[1]),str(round(initial_points[i][1],2)),10))
+                        insertToPathCartesianTextNumberCanvas(((0-offset-15,point[1]),str(round(initial_points[i][1],2)),8))
                         initial_canvas_ordinat.append(point[1])
                         
                         
@@ -467,6 +657,16 @@ def main(page: ft.Page):
                                                         cv.Canvas(
                                                             [
                                                                 cv.Path(
+                                                                    cartesian_line_result_canvas,
+                                                                    paint=paint_cartesian_line_canvas
+                                                                )
+                                                            ],
+                                                            width=float("inf"),
+                                                            expand=True,
+                                                        ),
+                                                        cv.Canvas(
+                                                            [
+                                                                cv.Path(
                                                                     canvas_path,
                                                                     paint=paint_canvas
                                                                 )
@@ -506,6 +706,9 @@ def main(page: ft.Page):
                                                         ),
                                                         cv.Canvas(
                                                             cartesian_text_number_canvas
+                                                        ),
+                                                        cv.Canvas(
+                                                            cartesian_text_number_result_canvas
                                                         ),
                                                     ]
                                                 )
@@ -587,6 +790,17 @@ def main(page: ft.Page):
                                                     ]
                                                 )
                                             ]
+                                        )
+                                    ),
+                                    # ListView
+                                    ft.Container(
+                                        width=0.25*app_w,
+                                        height=app_h*0.3,
+                                        border=ft.border.all(2, "#000000"),
+                                        border_radius=15,
+                                        content=ft.ListView(
+                                            auto_scroll=True,
+                                            controls=listview_controls,
                                         )
                                     )
                                     
