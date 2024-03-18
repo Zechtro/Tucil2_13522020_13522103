@@ -1,3 +1,4 @@
+import time
 def getMidPoint(p1,p2):
     x = float((p1[0]+p2[0])/2 )
     y = float((p1[1]+p2[1])/2)
@@ -37,5 +38,14 @@ def bruteForceN(points, iterasi):
     b.append((p[0], p[1]))
     return b
 
-print(BezierN([(0,0), (0.5, 0.5), (1,1), (1.5 , 0.5)], 0, 3))
-print(bruteForceN([(0,0), (0.5, 0.5), (1,1), (1.5 , 0.5)], 3))
+tstart = time.time()
+b = bruteForceN([(1,0), (3, 3), (5,3)], 3)
+tstop = time.time()
+print("Brute Force:", (tstop - tstart) * 1000)
+print(b)
+
+tstart = time.time()
+a = BezierN([(1,0), (3, 3), (5,3)],0, 3)
+tstop = time.time()
+print("DNC:", (tstop - tstart) * 1000)
+print(a)

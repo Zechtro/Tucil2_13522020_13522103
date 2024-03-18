@@ -1,7 +1,5 @@
 # Impementation
-def makeListEmpty(List):
-    List.clear()
-    
+
 def getMidPoint(p1,p2):
     x = float((p1[0]+p2[0])/2 )
     y = float((p1[1]+p2[1])/2)
