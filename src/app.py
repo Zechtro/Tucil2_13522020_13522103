@@ -100,6 +100,8 @@ def main(page: ft.Page):
         makeListEmpty(canvas_path)
         makeListEmpty(result_path)
         makeListEmpty(result_circle)
+        # makeListEmpty(process_time)
+        # process_time.append(0)
         process_time[0] = 0
         makeListEmpty(cartesian_line_result_canvas)
         makeListEmpty(cartesian_text_number_result_canvas)
@@ -123,6 +125,7 @@ def main(page: ft.Page):
         makeListEmpty(grid_canvas_show)
         makeListEmpty(initial_canvas_axis)
         makeListEmpty(initial_canvas_ordinat)
+        process_time[0] = 0
         range_x[0] = 0
         range_y[0] = 0
     
@@ -194,17 +197,31 @@ def main(page: ft.Page):
         page.update()
         
     def insertToListView(p):
-        listview_controls.append(
-            ft.Container(
-                margin=ft.margin.only(left=15),
-                content=ft.Column(
-                    controls=[
-                        ft.Text(str(len(listview_controls)-1)+ ". " + str(p),size=15,color="#000000"),
-                        ft.Text(" ",size=15,color="#000000"),
-                    ]
+        if(str(p[0]) == "process time"):
+            print(p)
+            listview_controls.append(
+                ft.Container(
+                    margin=ft.margin.only(left=15),
+                    content=ft.Column(
+                        controls=[
+                            ft.Text("Process time (Netto): " + str(p[1]) + " ns",size=15,color="#000000"),
+                            ft.Text(" ",size=15,color="#000000"),
+                        ]
+                    )
                 )
             )
-        )
+        else:
+            listview_controls.append(
+                ft.Container(
+                    margin=ft.margin.only(left=15),
+                    content=ft.Column(
+                        controls=[
+                            ft.Text(str(len(listview_controls)-1)+ ". " + str(p),size=15,color="#000000"),
+                            ft.Text(" ",size=15,color="#000000"),
+                        ]
+                    )
+                )
+            )
         page.update()
         
     # def insertToPathGridCanvas(ps):
@@ -302,73 +319,7 @@ def main(page: ft.Page):
     #     on_click=button1Clicked,
     # )
     
-    # def BezierN(points, iterasi, iterasiMax):
-    #     offset = 5
-    #     if (iterasi >= iterasiMax):
-    #         return []
-    #     else:
-    #         q = points
-    #         left = [q[0]]
-    #         right = [q[-1]]
-    #         while len(q) > 1:
-    #             temp = q
-    #             for i in range(len(temp)):
-    #                 if(i == 0):
-    #                     insertToPath((temp[0],"m"))
-    #                 else:
-    #                     insertToPath((temp[i],"l"))
-    #             q = [getMidPoint(temp[i], temp[i+1]) for i in range(len(temp)-1)]
-                
-    #             left.append(q[0])
-    #             right.append(q[-1])
-    #         right.reverse()
-    #         if(iterasi == iterasiMax-1):
-    #             insertToPathResultCircle(q[0])
-    #             real_point = canvasCoordinate_to_initCoordinate(q[0])
-                
-    #             insertToPathCartesianLineResultCanvas(((q[0][0],0+app_h*0.85-offset),"m"))
-    #             insertToPathCartesianLineResultCanvas(((q[0][0],0+app_h*0.85+offset),"l"))
-    #             insertToPathCartesianTextNumberResultCanvas(((q[0][0],0+app_h*0.85+offset+15),str(round(real_point[0],2)),8))
-                
-    #             insertToPathCartesianLineResultCanvas(((0-offset,q[0][1]),"m"))
-    #             insertToPathCartesianLineResultCanvas(((0+offset,q[0][1]),"l"))
-    #             insertToPathCartesianTextNumberResultCanvas(((0-offset-15,q[0][1]),str(round(real_point[1],2)),8))
-                
-    #             insertToPathResult((points[0],"m"))
-    #             insertToPathResult((q[0],"l"))
-    #             insertToPathResult((points[-1],"l"))
-    #         elif(iterasi < iterasiMax-1):
-    #             insertToPath((points[0],"m"))
-    #             insertToPath((q[0],"l"))
-    #             insertToPath((points[-1],"l"))
-    #         if iterasi == 0:
-    #             iterasi += 1
-    #             output = [points[0]] + BezierN(left, iterasi, iterasiMax)
-    #             real_point = canvasCoordinate_to_initCoordinate(left[-1])
-    #             insertToPathResultCircle(left[-1])
-    #             insertToPathCartesianLineResultCanvas(((left[-1][0],0+app_h*0.85-offset),"m"))
-    #             insertToPathCartesianLineResultCanvas(((left[-1][0],0+app_h*0.85+offset),"l"))
-    #             insertToPathCartesianTextNumberResultCanvas(((left[-1][0],0+app_h*0.85+offset+15),str(round(real_point[0],2)),8))
-                
-    #             insertToPathCartesianLineResultCanvas(((0-offset,left[-1][1]),"m"))
-    #             insertToPathCartesianLineResultCanvas(((0+offset,left[-1][1]),"l"))
-    #             insertToPathCartesianTextNumberResultCanvas(((0-offset-15,left[-1][1]),str(round(real_point[1],2)),8))
-    #             return  output + [left[-1]] + BezierN(right, iterasi, iterasiMax) + [points[-1]]
-    #         else:
-    #             iterasi += 1
-    #             output = BezierN(left, iterasi, iterasiMax)
-    #             real_point = canvasCoordinate_to_initCoordinate(left[-1])
-    #             insertToPathResultCircle(left[-1])
-    #             insertToPathCartesianLineResultCanvas(((left[-1][0],0+app_h*0.85-offset),"m"))
-    #             insertToPathCartesianLineResultCanvas(((left[-1][0],0+app_h*0.85+offset),"l"))
-    #             insertToPathCartesianTextNumberResultCanvas(((left[-1][0],0+app_h*0.85+offset+15),str(round(real_point[0],2)),8))
-                
-    #             insertToPathCartesianLineResultCanvas(((0-offset,left[-1][1]),"m"))
-    #             insertToPathCartesianLineResultCanvas(((0+offset,left[-1][1]),"l"))
-    #             insertToPathCartesianTextNumberResultCanvas(((0-offset-15,left[-1][1]),str(round(real_point[1],2)),8))
-    #             return output + [left[-1]] + BezierN(right, iterasi, iterasiMax)
-    def BezierN(points, iterasi, iterasiMax):
-        offset = 5
+    def BezierN_process_time(points, iterasi, iterasiMax):
         if (iterasi >= iterasiMax):
             return []
         else:
@@ -377,16 +328,51 @@ def main(page: ft.Page):
             right = [q[-1]]
             while len(q) > 1:
                 temp = q
-                for i in range(len(temp)):
-                    if(i == 0):
-                        insertToPath((initCoordinate_to_canvasCoordinate(temp[0]),"m"))
-                    else:
-                        insertToPath((initCoordinate_to_canvasCoordinate(temp[i]),"l"))
                 q = [getMidPoint(temp[i], temp[i+1]) for i in range(len(temp)-1)]
                 
                 left.append(q[0])
                 right.append(q[-1])
             right.reverse()
+            if iterasi == 0:
+                iterasi += 1
+                output = [points[0]] + BezierN_process_time(left, iterasi, iterasiMax)
+                return  output + [left[-1]] + BezierN_process_time(right, iterasi, iterasiMax) + [points[-1]]
+            else:
+                iterasi += 1
+                output = BezierN_process_time(left, iterasi, iterasiMax)
+                return output + [left[-1]] + BezierN_process_time(right, iterasi, iterasiMax)
+            
+    def BezierN(points, iterasi, iterasiMax):
+        offset = 5
+        if (iterasi >= iterasiMax):
+            start1 = time.time()
+            end1 = time.time()
+            # process_time[0] += (end1-start1)
+            return []
+        else:
+            start10 = time.time()
+            q = points
+            left = [q[0]]
+            right = [q[-1]]
+            end10 = time.time()
+            # process_time[0] += (end10-start10)
+            while len(q) > 1:
+                start2 = time.time()
+                temp = q
+                q = [getMidPoint(temp[i], temp[i+1]) for i in range(len(temp)-1)]
+                left.append(q[0])
+                right.append(q[-1])
+                end2 = time.time()
+                # process_time[0] += (end2-start2)
+                for i in range(len(temp)):
+                    if(i == 0):
+                        insertToPath((initCoordinate_to_canvasCoordinate(temp[0]),"m"))
+                    else:
+                        insertToPath((initCoordinate_to_canvasCoordinate(temp[i]),"l"))
+            start3 = time.time()       
+            right.reverse()
+            end3 = time.time()
+            # process_time[0] += (end3-start3)
             canvas_point = initCoordinate_to_canvasCoordinate(q[0])
             if(iterasi == iterasiMax-1):
             #     # insertToListView(q[0])
@@ -408,12 +394,21 @@ def main(page: ft.Page):
                 insertToPath((initCoordinate_to_canvasCoordinate(points[0]),"m"))
                 insertToPath((canvas_point,"l"))
                 insertToPath((initCoordinate_to_canvasCoordinate(points[-1]),"l"))
+                
             if iterasi == 0:
+                start4 = time.time()
                 iterasi += 1
+                end4 = time.time()
+                # process_time[0] += (end4-start4)
                 
                 insertToListView(points[0])
                 
-                output = [points[0]] + BezierN(left, iterasi, iterasiMax)
+                start5 = time.time()
+                output = [points[0]]
+                end5 = time.time()
+                # process_time[0] += (end5-start5)
+                
+                output += BezierN(left, iterasi, iterasiMax)
                 
                 insertToListView(left[-1])
                 
@@ -426,13 +421,27 @@ def main(page: ft.Page):
                 insertToPathCartesianLineResultCanvas(((0-offset,canvas_point[1]),"m"))
                 insertToPathCartesianLineResultCanvas(((0+offset,canvas_point[1]),"l"))
                 insertToPathCartesianTextNumberResultCanvas(((0-offset-15,canvas_point[1]),str(round(left[-1][1],2)),8))
-                output += [left[-1]] + BezierN(right, iterasi, iterasiMax) + [points[-1]]
+                
+                start6 = time.time()
+                output += [left[-1]]
+                end6 = time.time()
+                # process_time[0] += (end6-start6)
+                
+                output += BezierN(right, iterasi, iterasiMax)
+                
+                start7 = time.time()
+                output += [points[-1]]
+                end7 = time.time()
+                # process_time[0] += (end7-start7)
                 
                 insertToListView(points[-1])
-                
                 return output
+            
             else:
+                start40 = time.time()
                 iterasi += 1
+                end40 = time.time()
+                # process_time[0] += (end40-start40)
                 output = BezierN(left, iterasi, iterasiMax)
                 
                 insertToListView(left[-1])
@@ -446,14 +455,30 @@ def main(page: ft.Page):
                 insertToPathCartesianLineResultCanvas(((0-offset,canvas_point[1]),"m"))
                 insertToPathCartesianLineResultCanvas(((0+offset,canvas_point[1]),"l"))
                 insertToPathCartesianTextNumberResultCanvas(((0-offset-15,canvas_point[1]),str(round(left[-1][1],2)),8))
-                return output + [left[-1]] + BezierN(right, iterasi, iterasiMax)
+                
+                start8 = time.time()
+                output += [left[-1]]
+                end8 = time.time()
+                # process_time[0] += (end8-start8)
+                
+                output += BezierN(right, iterasi, iterasiMax)
+                
+                return output
     
     def buttonVisualizeClicked(e):
         resetPath()
         e.control.visible = False
-        e.control.disabled = True
-        print(BezierN(initial_points,0,num_of_iteration[0]))
-        e.control.disabled = False
+        # e.control.disabled = True
+        BezierN(initial_points,0,num_of_iteration[0])
+        startT = time.time_ns()
+        print("START",startT)
+        print("ITERATION",num_of_iteration[0])
+        BezierN_process_time(initial_points,0,num_of_iteration[0])
+        endT = time.time_ns()
+        print("END",endT)
+        process_time[0] = endT-startT
+        insertToListView(("process time",endT-startT))
+        # e.control.disabled = False
         e.control.visible = True
         page.update()
     
@@ -464,9 +489,11 @@ def main(page: ft.Page):
                     # ft.MaterialState.FOCUSED: ft.colors.BLUE,
                     ft.MaterialState.DEFAULT: "#FFFFFF",
                     ft.MaterialState.HOVERED: "#000000",
+                    ft.MaterialState.DISABLED: "#000000",
                 },
                 bgcolor={ft.MaterialState.DEFAULT: "#000000",
-                         ft.MaterialState.HOVERED: "#FFFFFF"
+                         ft.MaterialState.HOVERED: "#FFFFFF",
+                         ft.MaterialState.DISABLED: "#FFFFFF"
                 },
                 padding={ft.MaterialState.DEFAULT: 28},
                 overlay_color=ft.colors.TRANSPARENT,
