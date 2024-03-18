@@ -5,8 +5,8 @@ import time
 
 def main(page: ft.Page):
     page.title = "Bézier Curve"
-    app_h = 800
-    app_w = 1500
+    app_h = 700
+    app_w = 1300
     page.window_height = app_h
     page.window_width = app_w
     page.window_resizable = False
@@ -14,7 +14,6 @@ def main(page: ft.Page):
     # Fonts
     page.fonts = {
         "Railinc" : "/fonts/Raillinc.otf",
-        "Curves" : "/fonts/Square_Curves.ttf",
     }
     
     # Initiate Variable
@@ -43,7 +42,7 @@ def main(page: ft.Page):
     paint_initial_circle = ft.Paint(
         style=ft.PaintingStyle.FILL,
         stroke_width=1,
-        color="#000000"
+        color="#6B728E"
     )
     
     result_circle = []
@@ -69,28 +68,17 @@ def main(page: ft.Page):
         color="#45474B"
     )
     
-    grid_canvas_hide = []
-    grid_canvas_show = []
-    grid_canvas = [grid_canvas_hide]
-    paint_grid_canvas = ft.Paint(
-        style=ft.PaintingStyle.STROKE,
-        stroke_width=0.3,
-        color="#45474B"
-    )
-    
     initial_canvas_axis = []
     initial_canvas_ordinat = []
     
     coordinate_points = []
-    initial_points = []
-    original_result_points = []
-    
+    initial_points = []    
     visualization_speed = [0]
     
     listview_controls = [
         ft.Container(
             margin=ft.margin.only(top=10),
-            content=ft.Text("Result Point",text_align="CENTER",size=15, font_family="Railinc")
+            content=ft.Text("Result Point",text_align="CENTER",size=12, font_family="Railinc")
         ),
         ft.Divider(color="#000000")
     ]
@@ -100,8 +88,6 @@ def main(page: ft.Page):
         makeListEmpty(canvas_path)
         makeListEmpty(result_path)
         makeListEmpty(result_circle)
-        # makeListEmpty(process_time)
-        # process_time.append(0)
         process_time[0] = 0
         makeListEmpty(cartesian_line_result_canvas)
         makeListEmpty(cartesian_text_number_result_canvas)
@@ -122,7 +108,6 @@ def main(page: ft.Page):
         makeListEmpty(initial_circle)
         makeListEmpty(cartesian_line_canvas)
         makeListEmpty(cartesian_text_number_canvas)
-        makeListEmpty(grid_canvas_show)
         makeListEmpty(initial_canvas_axis)
         makeListEmpty(initial_canvas_ordinat)
         process_time[0] = 0
@@ -149,14 +134,12 @@ def main(page: ft.Page):
         time.sleep(1-visualization_speed[0])
         
     def insertToPathCircle(p):
-        s = float(50/(max(range_x[0],range_y[0])))
-        s = max(s,5)
+        s = 5
         initial_circle.append(cv.Path.Oval(p[0]-(0.5*s),p[1]-(0.5*s),s,s))
         page.update()
         
     def insertToPathResultCircle(p):
-        s = float(50/(max(range_x[0],range_y[0])))
-        s = max(s,5)
+        s = 5
         result_circle.append(cv.Path.Oval(p[0]-(0.5*s),p[1]-(0.5*s),s,s))
         page.update()
         
@@ -198,14 +181,13 @@ def main(page: ft.Page):
         
     def insertToListView(p):
         if(str(p[0]) == "process time"):
-            print(p)
             listview_controls.append(
                 ft.Container(
                     margin=ft.margin.only(left=15),
                     content=ft.Column(
                         controls=[
-                            ft.Text("Process time (Netto): " + str(p[1]) + " ns",size=15,color="#000000"),
-                            ft.Text(" ",size=15,color="#000000"),
+                            ft.Text("Process time (Netto): " + str(p[1]*1000) + " ms",size=12,color="#000000", weight=800,font_family="Railinc"),
+                            ft.Text(" ",size=5,color="#000000"),
                         ]
                     )
                 )
@@ -216,38 +198,13 @@ def main(page: ft.Page):
                     margin=ft.margin.only(left=15),
                     content=ft.Column(
                         controls=[
-                            ft.Text(str(len(listview_controls)-1)+ ". " + str(p),size=15,color="#000000"),
-                            ft.Text(" ",size=15,color="#000000"),
+                            ft.Text(str(len(listview_controls)-1)+ ". " + str(p),size=12,color="#000000"),
+                            ft.Text(" ",size=5,color="#000000"),
                         ]
                     )
                 )
             )
         page.update()
-        
-    # def insertToPathGridCanvas(ps):
-    #     if(ps[1] == "m"):
-    #         grid_canvas_show.append(cv.Path.MoveTo(ps[0][0],ps[0][1]))
-    #     else:
-    #         grid_canvas_show.append(cv.Path.LineTo(ps[0][0],ps[0][1]))
-    #     page.update()
-    
-    def canvasCoordinate_to_initCoordinate(p):
-        min_y = min([point[1] for point in initial_points])
-        min_x = min([point[0] for point in initial_points])
-        if(range_y[0] > range_x[0]):
-            coordinate_multiplier = float((app_h*0.85)/range_y[0])
-            # y_coor = (app_h*0.85) - ((point[1]-min_y)*coordinate_multiplier)
-            y = float((app_h*0.85-p[1])/coordinate_multiplier)+min_y
-            # x_coor = point[0]*coordinate_multiplier + (float(((app_h*0.85)-(temp_range_x*coordinate_multiplier))/2)-(min_x*coordinate_multiplier))
-            x = float((p[0]-(float(((app_h*0.85)-(range_x[0]*coordinate_multiplier))/2)+(min_x*coordinate_multiplier)))/coordinate_multiplier)
-        else:
-            coordinate_multiplier = float((app_h*0.85)/range_x[0])
-            # x_coor = (point[0]-min_x)*coordinate_multiplier
-            x = float(p[0]/coordinate_multiplier)+min_x
-            # y_coor = (app_h*0.85)-(point[1]*coordinate_multiplier + (float(((app_h*0.85)-(temp_range_y*coordinate_multiplier))/2)-(min_y*coordinate_multiplier)))
-            y = ((app_h * 0.85) - p[1] - float(((app_h * 0.85) - (range_y[0] * coordinate_multiplier)) / 2) + (min_y * coordinate_multiplier)) / coordinate_multiplier
-        # print("MIN Y", min_y, "(",x,",",y,")")
-        return (x,y)
     
     def initCoordinate_to_canvasCoordinate(p):
         min_y = min([point[1] for point in initial_points])
@@ -255,16 +212,11 @@ def main(page: ft.Page):
         if(range_y[0] > range_x[0]):
             coordinate_multiplier = float((app_h*0.85)/range_y[0])
             y = (app_h*0.85) - ((p[1]-min_y)*coordinate_multiplier)
-            # y = float((app_h*0.85-p[1])/coordinate_multiplier)+min_y
-            x = p[0]*coordinate_multiplier + (float(((app_h*0.85)-(range[0]*coordinate_multiplier))/2)-(min_x*coordinate_multiplier))
-            # x = float((p[0]-(float(((app_h*0.85)-(range_x[0]*coordinate_multiplier))/2)+(min_x*coordinate_multiplier)))/coordinate_multiplier)
+            x = p[0]*coordinate_multiplier + (float(((app_h*0.85)-(range_x[0]*coordinate_multiplier))/2)-(min_x*coordinate_multiplier))
         else:
             coordinate_multiplier = float((app_h*0.85)/range_x[0])
             x = (p[0]-min_x)*coordinate_multiplier
-            # x = float(p[0]/coordinate_multiplier)+min_x
             y = (app_h*0.85)-(p[1]*coordinate_multiplier + (float(((app_h*0.85)-(range_y[0]*coordinate_multiplier))/2)-(min_y*coordinate_multiplier)))
-            # y = ((app_h * 0.85) - p[1] - float(((app_h * 0.85) - (range_y[0] * coordinate_multiplier)) / 2) + (min_y * coordinate_multiplier)) / coordinate_multiplier
-        # print("MIN Y", min_y, "(",x,",",y,")")
         return (x,y)
     
     def getMidPoint(p1,p2):
@@ -272,52 +224,6 @@ def main(page: ft.Page):
         y = float((p1[1]+p2[1])/2)
         pout = (x,y)
         return pout
-
-    # def BezierKuadratik(p0, p1, p2, iterate, iterateMax):
-    #     if(iterate == 0):
-    #         insertToPath((p0,"m"))
-    #         insertToPath((p1,"l"))
-    #         insertToPath((p2,"l"))
-    #     q0 = getMidPoint(p0,p1)
-    #     q1 = getMidPoint(p1, p2)
-    #     r0 = getMidPoint(q0,q1)
-    #     if(iterate <= iterateMax-1):
-    #         insertToPath((q0,"m"))
-    #         insertToPath((q1,"l"))
-    #     if(iterate == iterateMax-1):
-    #         insertToPathResult((p0,"m"))
-    #         insertToPathResult((r0,"l"))
-    #         insertToPathResult((p2,"l"))
-    #     elif(iterate < iterateMax-1):
-    #         insertToPath((p0,"m"))
-    #         insertToPath((r0,"l"))
-    #         insertToPath((p2,"l"))
-        
-    #     if iterate == 0:
-    #         iterate += 1
-    #         return [p0] + BezierKuadratik(p0, q0, r0, iterate, iterateMax) + [r0] + BezierKuadratik(r0, q1, p2, iterate, iterateMax) + [p2]
-    #     elif iterate < iterateMax:
-    #         iterate += 1
-    #         return BezierKuadratik(p0, q0, r0, iterate, iterateMax) + [r0] + BezierKuadratik(r0, q1, p2, iterate, iterateMax)
-    #     else:
-    #         return []
-    
-    # def button1Clicked(e):
-    #     x0 = coordinate_points[0][0]
-    #     y0 = coordinate_points[0][1]
-    #     x1 = coordinate_points[1][0]
-    #     y1 = coordinate_points[1][1]
-    #     x2 = coordinate_points[2][0]
-    #     y2 = coordinate_points[2][1]
-    #     makeListEmpty(canvas_path)
-    #     makeListEmpty(result_path)
-    #     print(BezierKuadratik((x0,y0),(x1,y1),(x2,y2),0,num_of_iteration[0]))
-    #     # print(BezierKuadratik((0,720),(360,0),(720,720),0,num_of_iteration[0]))
-    
-    # button1 = ft.ElevatedButton(
-    #     text="1",
-    #     on_click=button1Clicked,
-    # )
     
     def BezierN_process_time(points, iterasi, iterasiMax):
         if (iterasi >= iterasiMax):
@@ -343,39 +249,29 @@ def main(page: ft.Page):
                 return output + [left[-1]] + BezierN_process_time(right, iterasi, iterasiMax)
             
     def BezierN(points, iterasi, iterasiMax):
-        offset = 5
+        if(iterasi == 0):
+            insertToPathResultCircle(points[0])
+            insertToListView(points[0])
+        offset=5
         if (iterasi >= iterasiMax):
-            start1 = time.time()
-            end1 = time.time()
-            # process_time[0] += (end1-start1)
             return []
         else:
-            start10 = time.time()
             q = points
             left = [q[0]]
             right = [q[-1]]
-            end10 = time.time()
-            # process_time[0] += (end10-start10)
             while len(q) > 1:
-                start2 = time.time()
                 temp = q
                 q = [getMidPoint(temp[i], temp[i+1]) for i in range(len(temp)-1)]
                 left.append(q[0])
                 right.append(q[-1])
-                end2 = time.time()
-                # process_time[0] += (end2-start2)
                 for i in range(len(temp)):
                     if(i == 0):
                         insertToPath((initCoordinate_to_canvasCoordinate(temp[0]),"m"))
                     else:
                         insertToPath((initCoordinate_to_canvasCoordinate(temp[i]),"l"))
-            start3 = time.time()       
             right.reverse()
-            end3 = time.time()
-            # process_time[0] += (end3-start3)
             canvas_point = initCoordinate_to_canvasCoordinate(q[0])
             if(iterasi == iterasiMax-1):
-            #     # insertToListView(q[0])
                 
                 insertToPathResultCircle(canvas_point)
                 
@@ -396,17 +292,9 @@ def main(page: ft.Page):
                 insertToPath((initCoordinate_to_canvasCoordinate(points[-1]),"l"))
                 
             if iterasi == 0:
-                start4 = time.time()
                 iterasi += 1
-                end4 = time.time()
-                # process_time[0] += (end4-start4)
                 
-                insertToListView(points[0])
-                
-                start5 = time.time()
                 output = [points[0]]
-                end5 = time.time()
-                # process_time[0] += (end5-start5)
                 
                 output += BezierN(left, iterasi, iterasiMax)
                 
@@ -422,26 +310,18 @@ def main(page: ft.Page):
                 insertToPathCartesianLineResultCanvas(((0+offset,canvas_point[1]),"l"))
                 insertToPathCartesianTextNumberResultCanvas(((0-offset-15,canvas_point[1]),str(round(left[-1][1],2)),8))
                 
-                start6 = time.time()
                 output += [left[-1]]
-                end6 = time.time()
-                # process_time[0] += (end6-start6)
                 
                 output += BezierN(right, iterasi, iterasiMax)
                 
-                start7 = time.time()
                 output += [points[-1]]
-                end7 = time.time()
-                # process_time[0] += (end7-start7)
                 
+                insertToPathResultCircle(points[-1])
                 insertToListView(points[-1])
                 return output
             
             else:
-                start40 = time.time()
                 iterasi += 1
-                end40 = time.time()
-                # process_time[0] += (end40-start40)
                 output = BezierN(left, iterasi, iterasiMax)
                 
                 insertToListView(left[-1])
@@ -456,10 +336,7 @@ def main(page: ft.Page):
                 insertToPathCartesianLineResultCanvas(((0+offset,canvas_point[1]),"l"))
                 insertToPathCartesianTextNumberResultCanvas(((0-offset-15,canvas_point[1]),str(round(left[-1][1],2)),8))
                 
-                start8 = time.time()
                 output += [left[-1]]
-                end8 = time.time()
-                # process_time[0] += (end8-start8)
                 
                 output += BezierN(right, iterasi, iterasiMax)
                 
@@ -468,25 +345,18 @@ def main(page: ft.Page):
     def buttonVisualizeClicked(e):
         resetPath()
         e.control.visible = False
-        # e.control.disabled = True
         BezierN(initial_points,0,num_of_iteration[0])
-        startT = time.time_ns()
-        print("START",startT)
-        print("ITERATION",num_of_iteration[0])
+        startT = time.time()
         BezierN_process_time(initial_points,0,num_of_iteration[0])
-        endT = time.time_ns()
-        print("END",endT)
+        endT = time.time()
         process_time[0] = endT-startT
         insertToListView(("process time",endT-startT))
-        # e.control.disabled = False
         e.control.visible = True
         page.update()
     
     buttonVisualize = ft.ElevatedButton(
         style=ft.ButtonStyle(
                 color={
-                    # ft.MaterialState.HOVERED: ft.colors.WHITE,
-                    # ft.MaterialState.FOCUSED: ft.colors.BLUE,
                     ft.MaterialState.DEFAULT: "#FFFFFF",
                     ft.MaterialState.HOVERED: "#000000",
                     ft.MaterialState.DISABLED: "#000000",
@@ -504,7 +374,7 @@ def main(page: ft.Page):
             ),
         width=0.15*app_w,
         on_click=buttonVisualizeClicked,
-        content=ft.Text("Visualize!",size=17,font_family="Railinc")
+        content=ft.Text("Visualize!",size=15,font_family="Railinc")
     )
     
     def inputChanged(e):
@@ -579,7 +449,6 @@ def main(page: ft.Page):
                     break
             
             if isValid:
-                # print("HUWAHUWA", initial_points,max_x,min_x,max_y,min_y)
                 temp_range_y = max_y-min_y
                 temp_range_x = max_x-min_x
                 if(temp_range_y > temp_range_x):
@@ -614,11 +483,7 @@ def main(page: ft.Page):
                         insertToPathCartesianLineCanvas(((0-offset,point[1]),"m"))
                         insertToPathCartesianLineCanvas(((0+offset,point[1]),"l"))
                         insertToPathCartesianTextNumberCanvas(((0-offset-15,point[1]),str(round(initial_points[i][1],2)),8))
-                        initial_canvas_ordinat.append(point[1])
-                        
-                        
-                print("COOR",coordinate_points, coordinate_multiplier, app_h*0.85, temp_range_x)
-                    
+                        initial_canvas_ordinat.append(point[1])                    
         page.update()
         
     def iterationChanged(e):
@@ -655,22 +520,11 @@ def main(page: ft.Page):
                                         height=app_h*0.85,
                                         width=app_h*0.85,
                                         alignment=ft.alignment.center,
-                                        # bgcolor="#000000",
-                                        margin=ft.margin.only(left=150),
+                                        margin=ft.margin.only(left=20),
                                         content=ft.Column(
                                             controls=[
                                                 ft.Stack(
                                                     controls=[
-                                                        cv.Canvas(
-                                                            [
-                                                                cv.Path(
-                                                                    grid_canvas[0],
-                                                                    paint=paint_grid_canvas
-                                                                )
-                                                            ],
-                                                            width=float("inf"),
-                                                            expand=True,
-                                                        ),
                                                         cv.Canvas(
                                                             [
                                                                 cv.Path(
@@ -769,7 +623,7 @@ def main(page: ft.Page):
                                             alignment="center",
                                             controls=[
                                                 ft.Container(
-                                                    width=app_w*0.2,
+                                                    width=app_w*0.18,
                                                     content=ft.TextField(
                                                         label="Insert Points",
                                                         hint_text="x0,y0_x1_y1_x2,y2_...",
@@ -789,7 +643,7 @@ def main(page: ft.Page):
                                     ),
                                     # Button "Visualize!"
                                     ft.Container(
-                                        margin=ft.margin.only(top=30,bottom=30),
+                                        margin=ft.margin.only(top=10,bottom=10),
                                         content=buttonVisualize
                                     ),
                                     # SPEED SLIDER
@@ -801,7 +655,7 @@ def main(page: ft.Page):
                                                 ft.Slider(
                                                     min=0,
                                                     max =1,
-                                                    divisions=10000,
+                                                    divisions=100,
                                                     active_color= "#000000",
                                                     on_change=slider_change
                                                 ),

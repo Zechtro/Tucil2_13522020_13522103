@@ -20,32 +20,55 @@ def BezierN(points, iterasi, iterasiMax):
         right.reverse()
         if iterasi == 0:
             iterasi += 1
-            return [points[0]] + BezierN(left, iterasi, iterasiMax) + [left[-1]] + BezierN(right, iterasi, iterasiMax) + [points[-1]]
+            return [points[0]] + BezierN(left, iterasi, iterasiMax) + [right[0]] + BezierN(right, iterasi, iterasiMax) + [points[-1]]
         else:
             iterasi += 1
-            return BezierN(left, iterasi, iterasiMax) + [left[-1]] + BezierN(right, iterasi, iterasiMax)
+            return BezierN(left, iterasi, iterasiMax) + [right[0]] + BezierN(right, iterasi, iterasiMax)
 
-def bruteForceN(points, iterasi):
+# def bruteForceN(points, iterasi):
+#     n = pow(2, iterasi)
+#     delta = 1 / n
+#     t = 0
+#     b = []
+#     for i in range(n):
+#         p = [(pow(1-t, 3)*points[0][i] + 3*pow(1-t, 2)*t*points[1][i] + 3 * (1-t) * pow(t, 2) * points[2][i] + pow(t, 3) * points[3][i]) for i in range(2)]
+#         b.append((p[0], p[1]))
+#         t += delta
+#     p = [points[3][i] for i in range(2)]
+#     b.append((p[0], p[1]))
+#     return b
+
+def BezierBruteForce(p0, p1, p2, iterasi):
     n = pow(2, iterasi)
     delta = 1 / n
-    t = 0
-    b = []
+    t = delta
+    b = [p0]
     for i in range(n):
-        p = [(pow(1-t, 3)*points[0][i] + 3*pow(1-t, 2)*t*points[1][i] + 3 * (1-t) * pow(t, 2) * points[2][i] + pow(t, 3) * points[3][i]) for i in range(2)]
-        b.append((p[0], p[1]))
+        x = (pow(1-t, 2)*p0[0] + 2*(1-t)*t*p1[0] + pow(t, 2) * p2[0])
+        y = (pow(1-t, 2)*p0[1] + 2*(1-t)*t*p1[1] + pow(t, 2) * p2[1])
+        b += [(x, y)]
         t += delta
-    p = [points[3][i] for i in range(2)]
-    b.append((p[0], p[1]))
+
+    b += [p2]
     return b
 
-tstart = time.time()
-b = bruteForceN([(1,0), (3, 3), (5,3)], 3)
-tstop = time.time()
-print("Brute Force:", (tstop - tstart) * 1000)
-print(b)
+titik = int(input("n = "))
+x = []
+y = []
+for i in range(titik):
+    x.append(int(input("x" + str(i + 1) + " = ")))
+    y.append(int(input("y" + str(i + 1) + " = ")))
+
+iterasi = int(input("Iterasi: "))
 
 tstart = time.time()
-a = BezierN([(1,0), (3, 3), (5,3)],0, 3)
+BezierBruteForce((x[0],y[0]), (x[1],y[1]), (x[2],y[2]), iterasi)
+tstop = time.time()
+print("Brute Force:", (tstop - tstart) * 1000)
+# print(b)
+
+tstart = time.time()
+BezierN([(x[0],y[0]), (x[1],y[1]), (x[2],y[2])],0, iterasi)
 tstop = time.time()
 print("DNC:", (tstop - tstart) * 1000)
-print(a)
+# print(a)
