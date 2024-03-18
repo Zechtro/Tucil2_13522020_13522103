@@ -250,7 +250,7 @@ def main(page: ft.Page):
             
     def BezierN(points, iterasi, iterasiMax):
         if(iterasi == 0):
-            insertToPathResultCircle(points[0])
+            insertToPathResultCircle(initCoordinate_to_canvasCoordinate(points[0]))
             insertToListView(points[0])
         offset=5
         if (iterasi >= iterasiMax):
@@ -316,7 +316,7 @@ def main(page: ft.Page):
                 
                 output += [points[-1]]
                 
-                insertToPathResultCircle(points[-1])
+                insertToPathResultCircle(initCoordinate_to_canvasCoordinate(points[-1]))
                 insertToListView(points[-1])
                 return output
             
@@ -502,7 +502,7 @@ def main(page: ft.Page):
         page.update()
                 
     container = ft.Container(
-        height=app_h,
+        height=app_h*0.92,
         width=app_w,
         bgcolor="#C7C8CC",
         content=ft.Column(
@@ -520,7 +520,7 @@ def main(page: ft.Page):
                                         height=app_h*0.85,
                                         width=app_h*0.85,
                                         alignment=ft.alignment.center,
-                                        margin=ft.margin.only(left=20),
+                                        margin=ft.margin.only(left=20,bottom=20),
                                         content=ft.Column(
                                             controls=[
                                                 ft.Stack(
