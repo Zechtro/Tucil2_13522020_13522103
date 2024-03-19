@@ -28,15 +28,14 @@ def BezierN(points, iterasi, iterasiMax):
 def BezierBruteForce(p0, p1, p2, iterasi):
     n = pow(2, iterasi)
     delta = 1 / n
-    t = delta
-    b = [p0]
+    t = 0
+    b = []
     for i in range(n):
-        x = (pow(1-t, 2)*p0[0] + 2*(1-t)*t*p1[0] + pow(t, 2) * p2[0])
-        y = (pow(1-t, 2)*p0[1] + 2*(1-t)*t*p1[1] + pow(t, 2) * p2[1])
-        b += [(x, y)]
+        p = [(pow(1-t, 2)*p0[i] + 2*(1-t)*t*p1[i] + pow(t, 2) * p2[i]) for i in range(2)]
+        b.append((p[0], p[1]))
         t += delta
-
-    b += [p2]
+    p = [pow(t, 2) * p2[i] for i in range(2)]
+    b.append((p[0], p[1]))
     return b
 
 titik = int(input("n = "))
