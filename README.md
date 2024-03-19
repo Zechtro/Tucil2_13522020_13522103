@@ -32,9 +32,11 @@
 
 
 ## GUI Screenshots
-![Example screenshot](./src/assets/img/GUI_file.jpg)
+![Example screenshot](./test/TC1_DNC_1.png)
 
-![Example screenshot](./src/assets/img/GUI_manual.jpg)
+![Example screenshot](./test/TCBonus_1.png)
+
+![Example screenshot](./test/TCBonus_6.jpg)
 
 
 ## Setup
@@ -48,6 +50,12 @@
 2. Install flet
 
     `pip install flet`
+
+    If there's access problem, try this instead:
+
+    `pip install flet --user`
+
+    If haven't solved yet, you might want to find the solution on the internet
 
 3. Run app.py program
 
@@ -79,7 +87,16 @@
 
 
 ## Usage
-1. 
+
+1. Insert points and number of iteration in each textfield
+
+2. Press "Visualize!" button
+
+3. Set the visualization speed by adjusting the slider as you wish
+
+4. Enjoy the process, while looking at the "Result Point" listview to see the point made on the result curve 
+
+5. When the process is finished, you can see the execution time of the __Divide and Conquer Algorithm__ on the bottom of "Result Point" listview
 
 
 ## Project Status
@@ -87,4 +104,4 @@ Project is: _complete_.
 
 
 ## Room for Improvement
-- Program modularity on GUI program (app.py)
+- Interrupt feature while processing current curve
