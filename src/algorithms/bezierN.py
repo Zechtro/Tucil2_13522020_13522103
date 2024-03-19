@@ -37,24 +37,3 @@ def BezierBruteForce(p0, p1, p2, iterasi):
     p = [pow(t, 2) * p2[i] for i in range(2)]
     b.append((p[0], p[1]))
     return b
-
-titik = int(input("n = "))
-x = []
-y = []
-for i in range(titik):
-    x.append(int(input("x" + str(i + 1) + " = ")))
-    y.append(int(input("y" + str(i + 1) + " = ")))
-
-iterasi = int(input("Iterasi: "))
-
-tstart = time.time()
-BezierBruteForce((x[0],y[0]), (x[1],y[1]), (x[2],y[2]), iterasi)
-tstop = time.time()
-print("Brute Force:", (tstop - tstart) * 1000)
-# print(b)
-
-tstart = time.time()
-BezierN([(x[0],y[0]), (x[1],y[1]), (x[2],y[2])],0, iterasi)
-tstop = time.time()
-print("DNC:", (tstop - tstart) * 1000)
-# print(a)

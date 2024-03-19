@@ -1,5 +1,6 @@
 import flet as ft
 import flet.canvas as cv
+import algorithms.bezierN as algo
 import math
 import time
 
@@ -225,29 +226,6 @@ def main(page: ft.Page):
         pout = (x,y)
         return pout
     
-    def BezierN_process_time(points, iterasi, iterasiMax):
-        if (iterasi >= iterasiMax):
-            return []
-        else:
-            q = points
-            left = [q[0]]
-            right = [q[-1]]
-            while len(q) > 1:
-                temp = q
-                q = [getMidPoint(temp[i], temp[i+1]) for i in range(len(temp)-1)]
-                
-                left.append(q[0])
-                right.append(q[-1])
-            right.reverse()
-            if iterasi == 0:
-                iterasi += 1
-                output = [points[0]] + BezierN_process_time(left, iterasi, iterasiMax)
-                return  output + [left[-1]] + BezierN_process_time(right, iterasi, iterasiMax) + [points[-1]]
-            else:
-                iterasi += 1
-                output = BezierN_process_time(left, iterasi, iterasiMax)
-                return output + [left[-1]] + BezierN_process_time(right, iterasi, iterasiMax)
-            
     def BezierN(points, iterasi, iterasiMax):
         if(iterasi == 0):
             insertToPathResultCircle(initCoordinate_to_canvasCoordinate(points[0]))
@@ -347,7 +325,7 @@ def main(page: ft.Page):
         e.control.visible = False
         BezierN(initial_points,0,num_of_iteration[0])
         startT = time.time()
-        BezierN_process_time(initial_points,0,num_of_iteration[0])
+        algo.BezierN(initial_points,0,num_of_iteration[0])
         endT = time.time()
         process_time[0] = endT-startT
         insertToListView(("process time",endT-startT))
